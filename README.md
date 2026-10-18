@@ -2,7 +2,7 @@
 
 Интерактивный 3D-симулятор диспетчеризации горно-транспортного комплекса открытых горных работ для кейса «Карьерная перспектива».
 
-🎮 **Онлайн-демо:** [https://qyzom.github.io/Evraz/](https://qyzom.github.io/Evraz/)
+**Онлайн-демо:** [https://qyzom.github.io/Evraz/](https://qyzom.github.io/Evraz/)
 
 ---
 
