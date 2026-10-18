@@ -1,5 +1,5 @@
 /**
- * Точка входа приложения ESIM DISPATCH
+ * Точка входа приложения Evraz
  */
 
 import { Game } from "./core/Game.js";

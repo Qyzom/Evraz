@@ -1,28 +1,20 @@
-MIT License
+# Лицензия на использование программного обеспечения
 
-Copyright (c) 2026 Qyzom
+Авторское право (c) 2026 Qyzom. Все права защищены.
+Copyright (c) 2026 Qyzom. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Данный исходный код и сопутствующие материалы предоставляются исключительно для ознакомления, тестирования и образовательного просмотра в рамках кейс-чемпионата.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+ЗАПРЕЩАЕТСЯ:
+1. Копирование, присвоение, воспроизведение или повторная публикация исходного кода (полностью или частично) в любых целях без предварительного письменного разрешения автора.
+2. Использование данного программного обеспечения, его алгоритмов, логики и графических компонентов в любых коммерческих, производственных или сторонних проектах.
+3. Модификация, декомпиляция, распространение, передача третьим лицам или сублицензирование исходного кода.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ ПРЕДОСТАВЛЯЕТСЯ «КАК ЕСТЬ» (AS IS), БЕЗ КАКИХ-ЛИБО ЯВНЫХ ИЛИ ПОДРАЗУМЕВАЕМЫХ ГАРАНТИЙ.
 
 ---
 
 ### Товарные знаки и брендинг (Disclaimer)
 
 Наименование «ЕВРАЗ» / «EVRAZ», фирменные цвета, элементы корпоративного стиля и логотипы являются зарегистрированными товарными знаками и интеллектуальной собственностью ООО «ЕВРАЗ» (или аффилированных лиц).
-Данный репозиторий представляет собой некоммерческий студенческий/инженерный проект, выполненный в рамках участия в кейс-чемпионате. Автор не претендует на владение правами на указанную интеллектуальную собственность. Использование товарных знаков третьими лицами в коммерческих или иных целях без прямого письменного согласия правообладателя запрещено.
+Данный репозиторий представляет собой учебный проект для кейс-чемпионата. Автор не претендует на права на товарные знаки и не передает прав на них третьим лицам. Использование наименования и айдентики третьими лицами без прямого согласия правообладателя строго запрещено.

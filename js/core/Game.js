@@ -1,5 +1,5 @@
 /**
- * Главный движок симуляции ESIM DISPATCH
+ * Главный движок симуляции Evraz
  */
 
 import { EVRAZ_CONFIG } from "../config.js";
