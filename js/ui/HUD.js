@@ -1027,15 +1027,21 @@ export class HUD {
     this.btnResume = document.getElementById("smenu-resume-btn");
     this.btnOpenMenu = document.getElementById("btn-open-smenu");
 
+    const startShiftHandler = () => {
+      if (this.modalStartMenu) this.modalStartMenu.classList.remove("active");
+      if (this.game.isShiftEnded || this.game.shiftSecondsRemaining <= 0) {
+        this.game.restart();
+      }
+      this.game.isPaused = false;
+      sound.playClick();
+    };
+
     if (this.btnStartNew) {
-      this.btnStartNew.addEventListener("click", () => {
-        if (this.modalStartMenu) this.modalStartMenu.classList.remove("active");
-        if (this.game.isShiftEnded || this.game.shiftSecondsRemaining <= 0) {
-          this.game.restart();
-        }
-        this.game.isPaused = false;
-        sound.playClick();
-      });
+      this.btnStartNew.addEventListener("click", startShiftHandler);
+    }
+    const topStartBtn = document.getElementById("smenu-start-top-btn");
+    if (topStartBtn) {
+      topStartBtn.addEventListener("click", startShiftHandler);
     }
 
     if (this.btnResume) {
