@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЕВРАЗ</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='2' fill='%23ED7D27'/></svg>">
+  
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/modal.css">
+
+  <!-- Error diagnostic hook -->
+  <script>
+    window.addEventListener('error', function(e) {
+      console.error('DIAG ERROR:', e);
+      try {
+        fetch('/__client_log__?err=' + encodeURIComponent(e.message + ' at ' + e.filename + ':' + e.lineno + ':' + e.colno + '\n' + (e.error ? e.error.stack : ''))).catch(function(){});
+      } catch(_) {}
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('DIAG PROMISE:', e);
+      try {
+        fetch('/__client_log__?err=' + encodeURIComponent('Unhandled rejection: ' + (e.reason ? (e.reason.stack || e.reason) : 'unknown'))).catch(function(){});
+      } catch(_) {}
+    });
+  </script>
+
+  <!-- Three.js ES Модули -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./js/vendor/three.module.js",
+      "three/addons/": "./js/vendor/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- 3D WebGL Разрез карьера и инфраструктуры -->
+  <canvas id="quarry-canvas"></canvas>
+
+  <!-- Интерактивный HUD диспетчера -->
+  <div class="hud-container">
+    
+    <!-- Верхняя статусная панель телеметрии -->
+    <header class="top-bar">
+      <div class="brand-section">
+        <!-- Фирменный знак триколор-штриха ЕВРАЗ -->
+        <div class="brand-mark">
+          <div class="stripe s1"></div>
+          <div class="stripe s2"></div>
+          <div class="stripe s3"></div>
+        </div>
+        <div class="brand-title">
+          <span class="brand-logo-text">ЕВРАЗ</span>
+        </div>
+      </div>
+
+      <!-- Ключевые метрики смены: выровнены по левой стороне рядом с логотипом -->
+      <div class="metrics-row">
+        <div class="metric-card highlight">
+          <span class="metric-label">Остаток смены</span>
+          <span class="metric-value gold" id="hud-shift-time-left">60:00</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">Руда на ГОФ</span>
+          <span class="metric-value" id="hud-ore-tons">0 т</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">Вскрыша</span>
+          <span class="metric-value" id="hud-waste-tons">0 т</span>
+        </div>
+
+        <div class="metric-card danger">
+          <span class="metric-label">Потери от простоев</span>
+          <span class="metric-value red" id="hud-losses">0 ₽</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">Чистый доход</span>
+          <span class="metric-value" id="hud-profit">0 ₽</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">КПИ смены</span>
+          <span class="metric-value" id="hud-kpi">100%</span>
+        </div>
+      </div>
+
+      <!-- Кнопки управления режимами и скоростью времени -->
+      <div class="top-controls">
+        <button class="ctrl-btn btn-auto" id="btn-toggle-auto" title="Переключение между ручным управлением и алгоритмической динамической маршрутизацией">
+          <span class="btn-label">РЕЖИМ: РУЧНОЙ</span>
+        </button>
+
+        <!-- Регулятор скорости симуляции (Пробел — пауза/старт) -->
+        <div class="time-controls-group" id="time-controls-group" title="Управление скоростью времени смены (Пробел — пауза)">
+          <span class="time-ctrl-label">ВРЕМЯ:</span>
+          <button class="speed-btn" data-speed="0" title="Пауза (0x) [Пробел]">0x</button>
+          <button class="speed-btn" data-speed="0.5" title="Замедленный режим (0.5x)">0.5x</button>
+          <button class="speed-btn active" data-speed="1" title="Нормальный темп (1x)">1x</button>
+          <button class="speed-btn" data-speed="2" title="Ускорение 2x">2x</button>
+          <button class="speed-btn" data-speed="4" title="Ускорение 4x">4x</button>
+          <button class="speed-btn" data-speed="8" title="Ускорение 8x">8x</button>
+        </div>
+
+        <button class="ctrl-btn" id="btn-open-smenu" title="Открыть инструкцию и описание игры">
+          <span>МЕНЮ</span>
+        </button>
+
+        <button class="ctrl-btn" id="btn-open-guide" style="background:#ED7D27;color:#FFFFFF;font-weight:700;" title="Инструкция: в чем суть работы диспетчера карьера">
+          <span>ИНСТРУКЦИЯ</span>
+        </button>
+
+        <button class="ctrl-btn" id="btn-open-passport" title="Открыть паспорт творческого задания">
+          <span>ПАСПОРТ</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Интерактивная карточка диспетчерского управления выбранным БелАЗом -->
+    <div class="truck-control-card" id="truck-control-card" style="display: none;">
+      <div class="tcard-header">
+        <div class="tcard-title">
+          <span class="tcard-badge" id="tc-badge">БЕЛАЗ-101</span>
+          <span class="tcard-type" id="tc-type">75313 • 240т</span>
+        </div>
+      </div>
+      <div class="tcard-body">
+        <div class="tcard-stat-row">
+          <span class="tc-label">Статус:</span>
+          <span class="tc-val" id="tc-status">Порожний в пути</span>
+        </div>
+        <div class="tcard-stat-row">
+          <span class="tc-label">Груз:</span>
+          <span class="tc-val highlight" id="tc-load">0 т / 240 т</span>
+        </div>
+        <div class="tcard-stat-row">
+          <span class="tc-label">Топливо:</span>
+          <span class="tc-val" id="tc-fuel">88%</span>
+        </div>
+        <div class="tcard-stat-row">
+          <span class="tc-label">Тех. состояние:</span>
+          <span class="tc-val" id="tc-condition">96%</span>
+        </div>
+      </div>
+      <div class="tcard-orders-title">АДРЕСНЫЙ ПРИКАЗ ДИСПЕТЧЕРА:</div>
+      <div class="tcard-actions">
+        <button class="tcard-btn" data-target="n_exc_deep">НАПРАВИТЬ В ЗАБОЙ 1 (Fe 62%, Зап.)</button>
+        <button class="tcard-btn" data-target="n_exc_deep2">НАПРАВИТЬ В ЗАБОЙ 4 (Fe 64%, Вост.)</button>
+        <button class="tcard-btn" data-target="n_exc_mid">НАПРАВИТЬ В ЗАБОЙ 2 (Рядовая, -95м)</button>
+        <button class="tcard-btn" data-target="n_exc_waste">НАПРАВИТЬ В ЗАБОЙ 3 (Вскрыша, -45м)</button>
+        <button class="tcard-btn" data-target="n_fuel" style="border-color:#FFB81C;color:#FFB81C;">НА АЗС ГТК (Заправка ДТ)</button>
+        <button class="tcard-btn service-btn" data-target="n_service">НА РМЦ (Ремонтные боксы)</button>
+        <button class="tcard-btn" data-target="n_parking" style="border-color:#10B981;color:#10B981;">НА ПЛОЩАДКУ ОТСТОЯ (Ангар)</button>
+      </div>
+    </div>
+
+    <!-- Интерактивная карточка промышленного объекта / здания / забоя -->
+    <div class="building-control-card" id="building-control-card" style="display: none;">
+      <div class="bcard-header">
+        <div class="bcard-title">
+          <span class="bcard-badge" id="bc-badge">ГОФ-1</span>
+          <span class="bcard-type" id="bc-name">Дробильный комплекс</span>
+        </div>
+      </div>
+      <div class="bcard-body">
+        <div class="bcard-stat-row">
+          <span class="bc-label">Режим работы:</span>
+          <span class="bc-val" id="bc-status">Приемка руды</span>
+        </div>
+        <div class="bcard-stat-row">
+          <span class="bc-label">Посты обслуживания:</span>
+          <span class="bc-val" id="bc-capacity">1 / 2 занято</span>
+        </div>
+        <div class="bcard-stat-row">
+          <span class="bc-label">Текущий цикл:</span>
+          <div class="bc-progress-wrap">
+            <div class="bc-progress-bar" id="bc-progress-bar" style="width: 0%;"></div>
+          </div>
+        </div>
+        <div class="bcard-stat-row">
+          <span class="bc-label">Очередь ожидания:</span>
+          <span class="bc-val highlight" id="bc-queue">Нет машин</span>
+        </div>
+        <div class="bcard-stat-row">
+          <span class="bc-label">Выработка за смену:</span>
+          <span class="bc-val" id="bc-throughput">0 т</span>
+        </div>
+      </div>
+      <!-- Краткое описание технологической роли объекта -->
+      <div class="bcard-description" id="bc-description" style="margin-top: 10px; padding: 10px 12px; background: rgba(0,0,0,0.35); border-left: 3px solid var(--evraz-orange); border-radius: 4px; font-size: 11px; line-height: 1.5; color: #CBD5E1;">
+        Дробильно-обогатительная фабрика: прием и первичное дробление кондиционной руды.
+      </div>
+    </div>
+
+    <!-- Регламентное уведомление при старте -->
+    <div class="start-hint-banner" id="start-hint">
+      СИСТЕМА СЦБ: АВТОМАТИЧЕСКАЯ МАРШРУТИЗАЦИЯ • КЛИК ПО БЕЛАЗУ ИЛИ В СПИСКЕ СЛЕВА — НАЗНАЧЕНИЕ МАРШРУТА • ESC — СВОБОДНЫЙ ОБЗОР
+    </div>
+
+    <!-- Левая боковая панель АСУ ГТК: журнал связи и оперативное управление парком -->
+    <aside class="hud-sidebar" id="hud-sidebar">
+      <!-- Верхняя половина: Журнал оперативной связи и СЦБ (без лишних точек и бейджей) -->
+      <section class="sidebar-section journal-section">
+        <div class="sidebar-section-header">
+          <div class="ssh-title">
+            <span>ЖУРНАЛ СВЯЗИ И СЦБ</span>
+          </div>
+        </div>
+        <div class="alerts-feed" id="hud-alerts-feed">
+          <div class="alert-item">
+            <span class="alert-time">[08:00]</span>
+            <span class="alert-msg">Смена открыта. На линии 12 БелАЗов, 4 экскаватора Liebherr.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Нижняя половина: Мониторинг и оперативное управление парком -->
+      <section class="sidebar-section fleet-section">
+        <div class="sidebar-section-header">
+          <div class="ssh-title">
+            <span class="ssh-indicator-fleet"></span>
+            <span>ПАРК БЕЛАЗ-75313 (12 ЕД.)</span>
+          </div>
+          <span class="ssh-badge fleet-active-count" id="hud-fleet-summary">0 / 12 В ЛИНИИ</span>
+        </div>
+        <div class="fleet-list" id="hud-fleet-list">
+          <!-- Заполняется динамически в HUD.js -->
+        </div>
+      </section>
+    </aside>
+
+    <!-- Закрепленная нижняя панель точек внимания и режимов камеры (АСУ ГТК) -->
+    <div class="camera-poi-bar" id="camera-poi-bar">
+      <div class="camera-poi-left">
+        <div class="camera-poi-label">
+          <span class="cam-title">ТОЧКИ ВНИМАНИЯ:</span>
+        </div>
+        <div class="camera-poi-buttons">
+          <button class="cam-btn active" data-poi="overview" title="Панорамный общий вид карьера (Клавиша 0)">КАРЬЕР</button>
+          <button class="cam-btn" data-poi="pit_bottom" title="Дно карьера, богатый горизонт (-195м)">ДНО (-195м)</button>
+          <button class="cam-btn" data-poi="gof" title="ГОФ-1 Дробильный комплекс (Клавиша 5)">ГОФ-1</button>
+          <button class="cam-btn" data-poi="dump" title="Северный отвал вскрышных пород (Клавиша 6)">ОТВАЛ</button>
+          <button class="cam-btn" data-poi="fuel" title="АЗС ГТК Топливный комплекс (Клавиша 7)">АЗС</button>
+          <button class="cam-btn" data-poi="service" title="РМЦ База техобслуживания БелАЗ (Клавиша 8)">РМЦ</button>
+          <button class="cam-btn" data-poi="parking" title="Площадка отстоя и сервисный ангар РМЦ">АНГАР</button>
+          <button class="cam-btn" data-poi="cup" title="Диспетчерский центр ЦУП (Клавиша 9)">ЦУП</button>
+
+          <!-- Выпадающий список забоев -->
+          <div class="cam-dropdown-wrapper" id="wrap-cam-exc">
+            <button class="cam-btn dropdown-toggle" id="btn-cam-exc">ЗАБОИ ▾</button>
+            <div class="cam-dropdown-menu" id="menu-cam-exc">
+              <button class="cam-menu-item" data-poi="exc_1">Забой 1 (Liebherr 9400 • Fe 62%, Запад) [1]</button>
+              <button class="cam-menu-item" data-poi="exc_4">Забой 4 (Liebherr 9400 • Fe 64%, Восток) [4]</button>
+              <button class="cam-menu-item" data-poi="exc_2">Забой 2 (Liebherr 9250 • Рядовая) [2]</button>
+              <button class="cam-menu-item" data-poi="exc_3">Забой 3 (Liebherr 9250 • Вскрыша) [3]</button>
+            </div>
+          </div>
+
+          <!-- Выпадающий список БелАЗов -->
+          <div class="cam-dropdown-wrapper" id="wrap-cam-trucks">
+            <button class="cam-btn dropdown-toggle" id="btn-cam-trucks">
+              <span id="label-cam-trucks">БЕЛАЗЫ ▾</span>
+            </button>
+            <div class="cam-dropdown-menu trucks-grid" id="menu-cam-trucks">
+              <!-- Заполняется динамически в HUD.js -->
+            </div>
+          </div>
+
+          <button class="cam-btn cam-reset" data-poi="free" title="Свободная камера (ручной осмотр карьера)">СВОБОДНЫЙ ОБЗОР</button>
+        </div>
+      </div>
+
+      <!-- Плашка активного слежения за самосвалом -->
+      <div class="cam-tracking-indicator" id="cam-tracking-indicator" style="display: none;">
+        <span class="tracking-pulse">●</span>
+        <span class="tracking-label">СЛЕЖЕНИЕ ЗА МАШИНОЙ:</span>
+        <span class="tracking-name" id="cam-tracking-name">БЕЛАЗ-101</span>
+        <button class="tracking-cancel-btn" id="btn-cancel-cam-tracking" title="Открепить камеру (Esc)">ОТКРЕПИТЬ ✕</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Модальное окно паспорта диспетчера (Технологический паспорт системы) -->
+  <div class="modal-overlay" id="dispatcher-guide-modal">
+    <div class="case-doc-container" style="max-width: 920px; max-height: 88vh; overflow-y: auto;">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="brand-stripes">
+            <div class="stripe s1"></div>
+            <div class="stripe s2"></div>
+            <div class="stripe s3"></div>
+          </div>
+          <div>
+            <h2 style="margin:0;font-size:18px;color:#ED7D27;letter-spacing:0.8px;">ТЕХНОЛОГИЧЕСКИЙ ПАСПОРТ ДИСПЕТЧЕРА АСУ ГТК «ESIM DISPATCH»</h2>
+            <div style="font-size:11px;color:#A0AEC0;">РЕГЛАМЕНТ ТР-ГТК-2026/04 • ЕВРАЗ КГОК • КАРЬЕРНАЯ ПЕРСПЕКТИВА</div>
+          </div>
+        </div>
+        <button class="modal-close" id="btn-close-guide">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:22px;color:#E2E8F0;font-size:13px;line-height:1.6;">
+        <div style="background:#14181D;border-left:4px solid #FFB81C;padding:12px 18px;border-radius:4px;margin-bottom:18px;">
+          <b style="color:#FFB81C;font-size:14px;">1. ЦЕЛЕВАЯ ФУНКЦИЯ ДИСПЕТЧЕРИЗАЦИИ:</b><br>
+          Максимизация операционной маржи смены (\(П_{чист} = В_{руда} - У_{простои} - Ш_{засор}\)) за счет динамической балансировки рудопотоков, разделения грузопотоков по двум независимым капитальным съездам и ликвидации технологических очередей.
+        </div>
+
+        <h3 style="color:#ED7D27;margin-top:16px;border-bottom:1px solid #2D3748;padding-bottom:6px;font-size:14px;">2. ТОПОЛОГИЯ КАРЬЕРА И ДВУХСЪЕЗДНАЯ СХЕМА (DUAL-RAMP):</h3>
+        <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;background:#161B22;">
+          <thead>
+            <tr style="background:#21262D;color:#ED7D27;text-align:left;">
+              <th style="padding:7px 10px;border:1px solid #30363D;">Транспортная артерия</th>
+              <th style="padding:7px 10px;border:1px solid #30363D;">Горизонты</th>
+              <th style="padding:7px 10px;border:1px solid #30363D;">Назначение и регламент движения</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#FFB81C;font-weight:700;">Западный съезд (West Ramp)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">0м → -45м → -95м → -195м</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Основной спуск порожних машин и подъем руды из Забоя 1 и Забоя 2 на ГОФ-1.</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#38BDF8;font-weight:700;">Восточный подъем (East Ramp)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">-195м → -145м → -95м → 0м</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Второй независимый подъем с нижнего горизонта -195м (Забой 4) прямо к Северному отвалу и магистрали. Исключает встречные заторы!</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#ED7D27;font-weight:700;">Северная магистраль (z = -540)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Горизонт 0м (Поверхность)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Скоростная трасса сопряжения ГОФ-1, АЗС ГТК, РМЦ, ЦУП и Северного отвала.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="color:#ED7D27;margin-top:16px;border-bottom:1px solid #2D3748;padding-bottom:6px;font-size:14px;">3. ПАСПОРТ ЗАБОЕВ И ПОГРУЗОЧНЫХ КОМПЛЕКСОВ:</h3>
+        <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;background:#161B22;">
+          <thead>
+            <tr style="background:#21262D;color:#ED7D27;text-align:left;">
+              <th style="padding:7px 10px;border:1px solid #30363D;">Объект</th>
+              <th style="padding:7px 10px;border:1px solid #30363D;">Экскаватор</th>
+              <th style="padding:7px 10px;border:1px solid #30363D;">Тип породы</th>
+              <th style="padding:7px 10px;border:1px solid #30363D;">Экономика / Тариф</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;font-weight:700;color:#FFB81C;">Забой 1 (Дно, Запад)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Liebherr R 9400 (ковш 48т)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Богатая руда (Fe 62%)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#10B981;font-weight:700;">+1 450 ₽/т (Высший приоритет)</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;font-weight:700;color:#FFB81C;">Забой 4 (Дно, Восток)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Liebherr R 9400 (ковш 48т)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Богатая руда (Fe 64%)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#10B981;font-weight:700;">+1 520 ₽/т (Связан с Вост. подъемом)</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;font-weight:700;color:#ED7D27;">Забой 2 (Горизонт -95м)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Liebherr R 9250 (ковш 32т)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Рядовая руда</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#10B981;">+1 200 ₽/т</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;font-weight:700;color:#A0AEC0;">Забой 3 (Горизонт -45м)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Liebherr R 9250 (ковш 32т)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Вскрышные породы</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">План вскрыши (на Северный отвал)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="color:#ED7D27;margin-top:16px;border-bottom:1px solid #2D3748;padding-bottom:6px;font-size:14px;">4. ПАСПОРТ ОБЪЕКТОВ ПОВЕРХНОСТИ:</h3>
+        <ul style="padding-left:18px;margin-top:6px;">
+          <li><b style="color:#FFB81C;">ГОФ-1 (Дробильный комплекс):</b> 2 поста разгрузки. Приемка кондиционной руды. Запрещен сброс вскрыши (штраф <b>-250 000 ₽</b> за аварийный останов дробилки).</li>
+          <li><b style="color:#A0AEC0;">Северный отвал:</b> 3 поста выгрузки вскрышных пород. Разгрузка кондиционной руды на отвал расценивается как утрата товарной продукции.</li>
+          <li><b style="color:#FFB81C;">АЗС ГТК:</b> 2 заправочных поста ТРК, резервуарный парк 300 000 л. Самосвалы с остатком топлива &lt;25% автоматически направляются на экспресс-заправку.</li>
+          <li><b style="color:#00A3E0;">РМЦ (База ТО):</b> 3 крытых бокса, мостовой кран, склад карьерных шин. Проведение планово-предупредительных ремонтов БелАЗ.</li>
+        </ul>
+
+        <h3 style="color:#ED7D27;margin-top:16px;border-bottom:1px solid #2D3748;padding-bottom:6px;font-size:14px;">5. ИНСТРУМЕНТЫ ДИСПЕТЧЕРА И ГОРЯЧИЕ КЛАВИШИ:</h3>
+        <p>• <b>Интерактивные 3D стрелки:</b> клик ЛКМ по оранжевому шеврону на полотне переводит направление стрелки.<br>
+        • <b>Клик по БелАЗу:</b> активация телеметрии, слежение камеры и панель персонального приказа.<br>
+        • <b>Клик по объектам / забоям:</b> открывает карточку живой очереди, загрузки постов и выработки.<br>
+        • <b>Горячие клавиши:</b> [0] Общий обзор • [1] Забой 1 • [2] Забой 2 • [3] Забой 3 • [4] Забой 4 • [5] ГОФ-1 • [6] Отвал • [7] АЗС • [8] РМЦ • [9] ЦУП • [Esc] Свободная камера.</p>
+      </div>
+      <div class="modal-footer" style="padding:14px 22px;display:flex;justify-content:flex-end;border-top:1px solid #2D3748;background:#171A1E;">
+        <button class="ctrl-btn" id="btn-close-guide-footer" style="background:#ED7D27;color:#fff;font-weight:bold;padding:10px 28px;border-radius:4px;cursor:pointer;">ПРИНЯТО В РАБОТУ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно паспорта системы -->
+  <div class="modal-overlay" id="case-passport-modal"></div>
+
+  <!-- Модальное окно завершения смены с подробной статистикой и диаграммами -->
+  <div class="modal-overlay" id="shift-summary-modal">
+    <div class="summary-container detailed-summary" style="max-width: 960px; max-height: 92vh; overflow-y: auto;">
+      <div class="summary-header-block">
+        <div class="badge" style="background: rgba(237, 125, 39, 0.15); color: #ED7D27;">АСУ ГТК • ИТОГОВЫЙ ОТЧЕТ</div>
+        <h2 style="font-size: 24px; color: #FFFFFF; margin: 4px 0;">ГОРНАЯ СМЕНА ЗАВЕРШЕНА (12 ЧАСОВ)</h2>
+        <p class="summary-subtitle" style="margin: 0; color: #94A3B8;">Комплексная аналитика горно-транспортного комплекса, баланс рудопотоков и диаграммы эффективности</p>
+      </div>
+
+      <!-- Сетка ключевых производственных показателей (8 метрик) -->
+      <div class="summary-metrics-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0;">
+        <div class="sum-item">
+          <div class="lbl">Товарная руда на ГОФ</div>
+          <div class="val" id="sum-ore" style="color: #FFB81C;">0 т</div>
+          <div class="sub-lbl" id="sum-ore-sub" style="font-size: 10px; color: #94A3B8;">Fe 62%: 0т | Fe 64%: 0т</div>
+        </div>
+
+        <div class="sum-item">
+          <div class="lbl">Вывезено вскрыши</div>
+          <div class="val" id="sum-waste" style="color: #ED7D27;">0 т</div>
+          <div class="sub-lbl" id="sum-waste-ratio" style="font-size: 10px; color: #94A3B8;">Коэф. вскрыши: 0.00 т/т</div>
+        </div>
+
+        <div class="sum-item">
+          <div class="lbl">Выполнено рейсов</div>
+          <div class="val" id="sum-trips" style="color: #38BDF8;">0</div>
+          <div class="sub-lbl" style="font-size: 10px; color: #94A3B8;">Парк: 12 самосвалов</div>
+        </div>
+
+        <div class="sum-item">
+          <div class="lbl">Расход дизтоплива</div>
+          <div class="val" id="sum-fuel" style="color: #E2E8F0;">0 л</div>
+          <div class="sub-lbl" id="sum-fuel-cost" style="font-size: 10px; color: #94A3B8;">Заправка: АЗС ГТК</div>
+        </div>
+
+        <div class="sum-item">
+          <div class="lbl">Потери от простоев</div>
+          <div class="val" id="sum-losses" style="color: var(--evraz-red);">0 ₽</div>
+          <div class="sub-lbl" id="sum-losses-sub" style="font-size: 10px; color: #94A3B8;">Самосвалы + Забои</div>
+        </div>
+
+        <div class="sum-item">
+          <div class="lbl">Чистый фин. доход</div>
+          <div class="val" id="sum-profit" style="color: var(--evraz-green);">0 ₽</div>
+          <div class="sub-lbl" style="font-size: 10px; color: #94A3B8;">С учетом всех затрат</div>
+        </div>
+
+        <div class="sum-item">
+          <div class="lbl">КПИ смены</div>
+          <div class="val" id="sum-kpi" style="color: #10B981;">100%</div>
+          <div class="sub-lbl" style="font-size: 10px; color: #94A3B8;">Эффективность СЦБ</div>
+        </div>
+
+        <div class="sum-item">
+          <div class="lbl">Готовность парка</div>
+          <div class="val" id="sum-fleet-readiness" style="color: #10B981;">100%</div>
+          <div class="sub-lbl" style="font-size: 10px; color: #94A3B8;">Без аварийных отказов</div>
+        </div>
+      </div>
+
+      <!-- Блок диаграмм и графиков -->
+      <div class="summary-charts-container" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; margin-bottom: 16px;">
+        <!-- Диаграмма 1: Почасовая динамика добычи руды и вскрыши (12 часов) -->
+        <div class="chart-card" style="background: #14181E; border: 1px solid #2B333F; border-radius: 6px; padding: 12px;">
+          <div class="chart-title" style="font-size: 11px; font-weight: 800; color: #ED7D27; text-transform: uppercase; margin-bottom: 8px;">
+            ПОЧАСОВАЯ ДИНАМИКА ДОБЫЧИ (12 ЧАСОВ СМЕНЫ)
+          </div>
+          <canvas id="chart-hourly-prod" width="480" height="170" style="width: 100%; height: 170px; display: block;"></canvas>
+          <div style="display: flex; gap: 16px; justify-content: center; margin-top: 6px; font-size: 10px; color: #94A3B8;">
+            <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; background: #FFB81C; border-radius: 2px;"></span> Руда (т)</span>
+            <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; background: #ED7D27; border-radius: 2px;"></span> Вскрыша (т)</span>
+          </div>
+        </div>
+
+        <!-- Диаграмма 2: Распределение добычи по забоям карьера -->
+        <div class="chart-card" style="background: #14181E; border: 1px solid #2B333F; border-radius: 6px; padding: 12px;">
+          <div class="chart-title" style="font-size: 11px; font-weight: 800; color: #FFB81C; text-transform: uppercase; margin-bottom: 8px;">
+            ОТГРУЗКА ПО ЗАБОЯМ КАРЬЕРА
+          </div>
+          <canvas id="chart-pit-dist" width="340" height="170" style="width: 100%; height: 170px; display: block;"></canvas>
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 6px; font-size: 10px; color: #94A3B8;">
+            <span>Забой 1 (Fe 62%)</span> • <span>Забой 4 (Fe 64%)</span> • <span>Забой 2</span> • <span>Вскрыша</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Диаграмма 3: Структура использования времени парка -->
+      <div class="chart-card" style="background: #14181E; border: 1px solid #2B333F; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+        <div class="chart-title" style="font-size: 11px; font-weight: 800; color: #10B981; text-transform: uppercase; margin-bottom: 8px;">
+          СТРУКТУРА РАБОЧЕГО ВРЕМЕНИ ПАРКА БЕЛАЗ-75313/75131
+        </div>
+        <canvas id="chart-fleet-util" width="840" height="42" style="width: 100%; height: 42px; display: block; border-radius: 4px;"></canvas>
+        <div id="chart-fleet-util-legend" style="display: flex; gap: 14px; justify-content: space-between; margin-top: 8px; font-size: 10px; color: #CBD5E1;">
+          <!-- Заполняется динамически -->
+        </div>
+      </div>
+
+      <div class="sum-conclusion" style="margin-bottom: 16px;">
+        <strong>Экономический результат смены:</strong><br>
+        Применение адаптивного регулирования маршрутов АСУ ГТК и двухсъездной топологии (Запад/Восток) позволило ликвидировать узкие места в узлах слияния потоков и обеспечить ритмичную подачу богатой руды на ГОФ-1.
+      </div>
+
+      <button class="btn-primary" id="btn-restart-shift" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 800;">НАЧАТЬ НОВУЮ СМЕНУ (1 ЧАС)</button>
+    </div>
+  </div>
+
+  <!-- Модальное окно стартового меню и описания игры -->
+  <div class="modal-overlay active" id="start-menu-modal">
+    <div class="case-doc-container" style="max-width: 840px;">
+      <div class="case-header">
+        <div class="badge" style="background: rgba(237, 125, 39, 0.15); color: #ED7D27;">АСУ ГТК • ЕВРАЗ</div>
+        <h2 style="font-size: 22px; color: #FFFFFF;">ДИСПЕТЧЕРСКИЙ ПУЛЬТ КАРЬЕРА</h2>
+        <div class="subtitle" style="color: #94A3B8;">Система мониторинга и динамической маршрутизации технологического автотранспорта</div>
+      </div>
+
+      <!-- Краткое описание и цель смены -->
+      <div class="case-card" style="border-left: 4px solid #ED7D27;">
+        <h4 style="color: #FFB81C; margin-bottom: 6px; font-size: 13px;">ЦЕЛЬ СМЕНЫ И СУТЬ ИГРЫ</h4>
+        <p style="font-size: 12px; line-height: 1.6; color: #CBD5E1; margin: 0;">
+          Вы выступаете в роли главного горного диспетчера АСУ ГТК ЕВРАЗ. Ваша задача на <b>1-часовую смену</b> (12 часов виртуального горного времени): обеспечить максимальную отгрузку кондиционной титаномагнетитовой руды на дробильный комплекс ГОФ-1 и вывоз пустой породы на Северный отвал, исключая простой гидравлических экскаваторов Liebherr и скопление БелАЗов в заторах.
+        </p>
+      </div>
+
+      <!-- Инструктаж по управлению -->
+      <div class="case-grid">
+        <div class="case-card">
+          <h4 style="color: #ED7D27; margin-bottom: 6px; font-size: 12px;">УПРАВЛЕНИЕ ПАРКОМ И СЦБ</h4>
+          <p style="font-size: 11px; line-height: 1.5; color: #CBD5E1; margin: 0;">
+            • <b>Пульт парка слева:</b> Все 12 БелАЗов с живым статусом груза, бака и кнопкой «ФОКУС».<br>
+            • <b>Адресный приказ:</b> Выпадающий список «ПРИКАЗ ▾» мгновенно отправляет машину в любой забой, на ГОФ, Отвал, АЗС или РМЦ.<br>
+            • <b>Светофоры СЦБ:</b> Шевроны на развилках автоматически ориентируются по ходу движения транспорта.
+          </p>
+        </div>
+
+        <div class="case-card">
+          <h4 style="color: #ED7D27; margin-bottom: 6px; font-size: 12px;">СКОРОСТЬ ВРЕМЕНИ И КАМЕРА</h4>
+          <p style="font-size: 11px; line-height: 1.5; color: #CBD5E1; margin: 0;">
+            • <b>Редактор скорости:</b> В шапке кнопки <code>0x</code>, <code>0.5x</code>, <code>1x</code>, <code>2x</code>, <code>4x</code>, <code>8x</code>.<br>
+            • <b>Клавиша [Пробел]:</b> Моментальная пауза/возобновление игры в любой момент!<br>
+            • <b>Режим «АСУ ГТК (АВТОМАТ)»:</b> Алгоритмическая оптимизация назначения забоев, балансировка рудопотоков и дозаправки.<br>
+            • <b>Клавиши:</b> [0] Общий вид • [1-4] Забои • [5] ГОФ • [6] Отвал • [7] АЗС • [8] РМЦ • [9] ЦУП • [Esc] Свободный обзор.
+          </p>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 14px 0 0 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08);">
+        <button class="ctrl-btn" id="smenu-resume-btn" style="display: none; background: #2E353F; color: #E2E8F0; cursor: pointer; position: relative; z-index: 10;">ВЕРНУТЬСЯ К СМЕНЕ</button>
+        <button class="ctrl-btn" id="smenu-start-new-btn" style="background: #ED7D27; color: #FFFFFF; font-weight: 800; padding: 12px 28px; font-size: 13px; margin-left: auto; cursor: pointer; position: relative; z-index: 10;">НАЧАТЬ СМЕНУ (1 ЧАС)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модули ES6 -->
+  <script type="module" src="js/main.js?v=v1.5"></script>
+</body>
+</html>
