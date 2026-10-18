@@ -535,45 +535,110 @@
 
   <!-- Модальное окно стартового меню и описания игры -->
   <div class="modal-overlay active" id="start-menu-modal">
-    <div class="case-doc-container" style="max-width: 840px;">
-      <div class="case-header">
-        <div class="badge" style="background: rgba(237, 125, 39, 0.15); color: #ED7D27;">АСУ ГТК • ЕВРАЗ</div>
-        <h2 style="font-size: 22px; color: #FFFFFF;">ДИСПЕТЧЕРСКИЙ ПУЛЬТ КАРЬЕРА</h2>
-        <div class="subtitle" style="color: #94A3B8;">Система мониторинга и динамической маршрутизации технологического автотранспорта</div>
-      </div>
-
-      <!-- Краткое описание и цель смены -->
-      <div class="case-card" style="border-left: 4px solid #ED7D27;">
-        <h4 style="color: #FFB81C; margin-bottom: 6px; font-size: 13px;">КАК ИГРАТЬ И ЦЕЛЬ СМЕНЫ (10 МИНУТ)</h4>
-        <p style="font-size: 12px; line-height: 1.6; color: #CBD5E1; margin: 0;">
-          Вы — главный горный диспетчер. Ваша задача за <b>10 минут реального времени</b> (12 часов горной смены): обеспечить максимальную доставку руды на фабрику ГОФ-1 и пустой породы на Северный отвал, не допуская простоев экскаваторов и скопления БелАЗов в очередях.
-        </p>
-      </div>
-
-      <!-- Инструктаж по управлению -->
-      <div class="case-grid">
-        <div class="case-card">
-          <h4 style="color: #ED7D27; margin-bottom: 6px; font-size: 12px;">3 ПРОСТЫХ ШАГА ДИСПЕТЧЕРА</h4>
-          <p style="font-size: 11px; line-height: 1.5; color: #CBD5E1; margin: 0;">
-            <b>1. Распределяйте самосвалы:</b> в списке слева у каждого БелАЗа жмите «ПРИКАЗ ▾» и отправляйте в Забои 1–4.<br>
-            <b>2. Не путайте разгрузку:</b> богатая и рядовая руда едет на <b>ГОФ-1</b>, пустая вскрыша — строго на <b>Отвал</b>.<br>
-            <b>3. Следите за баком и ТО:</b> при остатке топлива &lt;30% шлите на <b>АЗС</b>, при износе &lt;70% — на <b>РМЦ</b>.
-          </p>
-        </div>
-
-        <div class="case-card">
-          <h4 style="color: #ED7D27; margin-bottom: 6px; font-size: 12px;">УПРАВЛЕНИЕ И АВТОМАТИЗАЦИЯ</h4>
-          <p style="font-size: 11px; line-height: 1.5; color: #CBD5E1; margin: 0;">
-            • <b>Режим «АСУ ГТК (АВТОМАТ)»:</b> нажмите кнопку в шапке, и система сама идеально распределит все 12 БелАЗов.<br>
-            • <b>Управление камерой:</b> клик по машине захватывает фокус. Крутите колесико мыши и вращайте камеру. Сброс — клавиша <code>Esc</code>.<br>
-            • <b>Скорость:</b> в шапке кнопки <code>1x</code>, <code>2x</code>, <code>4x</code>, <code>8x</code>. Пауза — <code>[Пробел]</code>.
-          </p>
+    <div class="case-doc-container" style="max-width: 920px; max-height: 88vh; overflow-y: auto;">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="brand-stripes">
+            <div class="stripe s1"></div>
+            <div class="stripe s2"></div>
+            <div class="stripe s3"></div>
+          </div>
+          <div>
+            <h2 style="margin:0;font-size:18px;color:#ED7D27;letter-spacing:0.8px;">ТЕХНОЛОГИЧЕСКИЙ ПАСПОРТ ДИСПЕТЧЕРА АСУ ГТК «ESIM DISPATCH»</h2>
+            <div style="font-size:11px;color:#A0AEC0;">РЕГЛАМЕНТ ТР-ГТК-2026/04 • ЕВРАЗ КГОК • КАРЬЕРНАЯ ПЕРСПЕКТИВА • СМЕНА 10 МИНУТ</div>
+          </div>
         </div>
       </div>
+      <div class="modal-body" style="padding:22px;color:#E2E8F0;font-size:13px;line-height:1.6;">
+        <div style="background:#14181D;border-left:4px solid #FFB81C;padding:12px 18px;border-radius:4px;margin-bottom:18px;">
+          <b style="color:#FFB81C;font-size:14px;">1. ЦЕЛЕВАЯ ФУНКЦИЯ ДИСПЕТЧЕРИЗАЦИИ (СМЕНА 10 МИНУТ):</b><br>
+          Вы — главный диспетчер горно-транспортного комплекса. За <b>10 минут реального времени</b> (моделирующих 12 часов горной смены) ваша задача — максимизировать чистую прибыль: <b>П<sub>чист</sub> = Выручка<sub>руда</sub> − Убытки<sub>простои</sub> − Штрафы<sub>засор</sub></b> за счет динамической балансировки рудопотоков, разделения грузопотоков по двум независимым съездам (Запад / Восток) и ликвидации технологических очередей.
+        </div>
 
-      <div class="modal-footer" style="padding: 14px 0 0 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08);">
-        <button class="ctrl-btn" id="smenu-resume-btn" style="display: none; background: #2E353F; color: #E2E8F0; cursor: pointer; position: relative; z-index: 10;">ВЕРНУТЬСЯ К СМЕНЕ</button>
-        <button class="ctrl-btn" id="smenu-start-new-btn" style="background: #ED7D27; color: #FFFFFF; font-weight: 800; padding: 12px 28px; font-size: 13px; margin-left: auto; cursor: pointer; position: relative; z-index: 10;">НАЧАТЬ СМЕНУ (10 МИНУТ)</button>
+        <h3 style="color:#ED7D27;margin-top:16px;border-bottom:1px solid #2D3748;padding-bottom:6px;font-size:14px;">2. ТОПОЛОГИЯ КАРЬЕРА И ДВУХСЪЕЗДНАЯ СХЕМА (DUAL-RAMP):</h3>
+        <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;background:#161B22;">
+          <thead>
+            <tr style="background:#21262D;color:#ED7D27;text-align:left;">
+              <th style="padding:7px 10px;border:1px solid #30363D;">Транспортная артерия</th>
+              <th style="padding:7px 10px;border:1px solid #30363D;">Горизонты</th>
+              <th style="padding:7px 10px;border:1px solid #30363D;">Назначение и регламент движения</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#FFB81C;font-weight:700;">Западный съезд (West Ramp)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">0м → -45м → -95м → -195м</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Основной спуск порожних машин и подъем руды из Забоя 1 и Забоя 2 на ГОФ-1.</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#38BDF8;font-weight:700;">Восточный подъем (East Ramp)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">-195м → -145м → -95м → 0м</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Второй независимый подъем с нижнего горизонта -195м (Забой 4) прямо к Северному отвалу и магистрали. Исключает встречные заторы!</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#ED7D27;font-weight:700;">Северная магистраль (z = -540)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Горизонт 0м (Поверхность)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Скоростная трасса сопряжения ГОФ-1, АЗС ГТК, РМЦ, ЦУП и Северного отвала.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="color:#ED7D27;margin-top:16px;border-bottom:1px solid #2D3748;padding-bottom:6px;font-size:14px;">3. ПАСПОРТ ЗАБОЕВ И ПОГРУЗОЧНЫХ КОМПЛЕКСОВ:</h3>
+        <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;background:#161B22;">
+          <thead>
+            <tr style="background:#21262D;color:#ED7D27;text-align:left;">
+              <th style="padding:7px 10px;border:1px solid #30363D;">Объект</th>
+              <th style="padding:7px 10px;border:1px solid #30363D;">Экскаватор</th>
+              <th style="padding:7px 10px;border:1px solid #30363D;">Тип породы</th>
+              <th style="padding:7px 10px;border:1px solid #30363D;">Экономика / Тариф</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;font-weight:700;color:#FFB81C;">Забой 1 (Дно, Запад)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Liebherr R 9400 (ковш 48т)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Богатая руда (Fe 62%)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#10B981;font-weight:700;">+1 450 ₽/т (Высший приоритет)</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;font-weight:700;color:#FFB81C;">Забой 4 (Дно, Восток)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Liebherr R 9400 (ковш 48т)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Богатая руда (Fe 64%)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#10B981;font-weight:700;">+1 520 ₽/т (Связан с Вост. подъемом)</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;font-weight:700;color:#ED7D27;">Забой 2 (Горизонт -95м)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Liebherr R 9250 (ковш 32т)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Рядовая руда</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;color:#10B981;">+1 200 ₽/т</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;border:1px solid #30363D;font-weight:700;color:#A0AEC0;">Забой 3 (Горизонт -45м)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Liebherr R 9250 (ковш 32т)</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">Вскрышные породы</td>
+              <td style="padding:6px 10px;border:1px solid #30363D;">План вскрыши (на Северный отвал)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="color:#ED7D27;margin-top:16px;border-bottom:1px solid #2D3748;padding-bottom:6px;font-size:14px;">4. ПАСПОРТ ОБЪЕКТОВ ПОВЕРХНОСТИ:</h3>
+        <ul style="padding-left:18px;margin-top:6px;">
+          <li><b style="color:#FFB81C;">ГОФ-1 (Дробильный комплекс):</b> 2 поста разгрузки. Приемка кондиционной руды. Запрещен сброс вскрыши (штраф <b>-250 000 ₽</b> за аварийный останов дробилки).</li>
+          <li><b style="color:#A0AEC0;">Северный отвал:</b> 3 поста выгрузки вскрышных пород. Разгрузка кондиционной руды на отвал расценивается как утрата товарной продукции.</li>
+          <li><b style="color:#FFB81C;">АЗС ГТК:</b> 2 заправочных поста ТРК, резервуарный парк 300 000 л. Самосвалы с остатком топлива &lt;25% направляются на экспресс-заправку.</li>
+          <li><b style="color:#00A3E0;">РМЦ (База ТО):</b> 3 крытых бокса, мостовой кран, склад карьерных шин. Проведение планово-предупредительных ремонтов БелАЗ.</li>
+        </ul>
+
+        <h3 style="color:#ED7D27;margin-top:16px;border-bottom:1px solid #2D3748;padding-bottom:6px;font-size:14px;">5. ИНСТРУМЕНТЫ ДИСПЕТЧЕРА И ГОРЯЧИЕ КЛАВИШИ:</h3>
+        <p>• <b>Клик по БелАЗу или [ФОКУС]:</b> слежение камеры, зум/вращение колесиком мыши без сброса фокуса.<br>
+        • <b>Кнопка [ПРИКАЗ ▾]:</b> адресная отправка самосвала в любой забой, на ГОФ, Отвал, АЗС или в Ангар РМЦ.<br>
+        • <b>Режим «АСУ ГТК (АВТОМАТ)»:</b> алгоритмическое распределение потоков без очередей и простоев.<br>
+        • <b>Пробел:</b> пауза и возобновление смены • <b>[Esc]:</b> моментальный сброс в свободный обзор.<br>
+        • <b>Клавиши [0–9]:</b> [0] Общий обзор • [1] Забой 1 • [2] Забой 2 • [3] Забой 3 • [4] Забой 4 • [5] ГОФ-1 • [6] Отвал • [7] АЗС • [8] РМЦ • [9] ЦУП.</p>
+      </div>
+      <div class="modal-footer" style="padding:14px 22px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #2D3748;background:#171A1E;">
+        <button class="ctrl-btn" id="smenu-resume-btn" style="display: none; background: #2E353F; color: #E2E8F0; cursor: pointer;">ВЕРНУТЬСЯ К СМЕНЕ</button>
+        <button class="ctrl-btn" id="smenu-start-new-btn" style="background: #ED7D27; color: #FFFFFF; font-weight: 800; padding: 12px 28px; font-size: 13px; margin-left: auto; cursor: pointer;">НАЧАТЬ СМЕНУ (10 МИНУТ)</button>
       </div>
     </div>
   </div>

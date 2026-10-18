@@ -314,60 +314,40 @@ export class ModelBuilder {
     const platformMat = new THREE.MeshStandardMaterial({
       color: "#38312B",
       roughness: 0.94,
-      metalness: 0.06
-    });
-    const platformBorderMat = new THREE.MeshStandardMaterial({
-      color: "#221C18",
-      roughness: 0.96
+      metalness: 0.06,
+      side: THREE.DoubleSide,
+      polygonOffset: true,
+      polygonOffsetFactor: -4.5,
+      polygonOffsetUnits: -9.0
     });
 
     // Забой 1 (Отметка -195м, Liebherr 9400, Богатая руда на просторном дне)
-    const p1Geo = new THREE.CylinderGeometry(30, 32, 2.5, 36);
+    const p1Geo = new THREE.CylinderGeometry(32, 34, 1.2, 36);
     const p1 = new THREE.Mesh(p1Geo, platformMat);
-    p1.position.set(-100, -196.25, 20);
+    p1.position.set(-100, -195 + 0.6, 20);
     p1.receiveShadow = true;
     quarryGroup.add(p1);
 
-    const p1Berm = new THREE.Mesh(new THREE.TorusGeometry(30, 1.2, 8, 36), platformBorderMat);
-    p1Berm.rotateX(Math.PI / 2);
-    p1Berm.position.set(-100, -194.5, 20);
-    quarryGroup.add(p1Berm);
-
     // Забой 2 (Отметка -95м, Liebherr 9250, Рядовая руда)
-    const p2Geo = new THREE.CylinderGeometry(26, 28, 2.5, 32);
+    const p2Geo = new THREE.CylinderGeometry(28, 30, 1.2, 32);
     const p2 = new THREE.Mesh(p2Geo, platformMat);
-    p2.position.set(-188, -96.25, -241);
+    p2.position.set(-188, -95 + 0.6, -241);
     p2.receiveShadow = true;
     quarryGroup.add(p2);
 
-    const p2Berm = new THREE.Mesh(new THREE.TorusGeometry(26, 1.1, 8, 32), platformBorderMat);
-    p2Berm.rotateX(Math.PI / 2);
-    p2Berm.position.set(-188, -94.5, -241);
-    quarryGroup.add(p2Berm);
-
     // Забой 3 (Отметка -45м, Liebherr 9250, Вскрыша)
-    const p3Geo = new THREE.CylinderGeometry(26, 28, 2.5, 32);
+    const p3Geo = new THREE.CylinderGeometry(30, 32, 1.2, 32);
     const p3 = new THREE.Mesh(p3Geo, platformMat);
-    p3.position.set(-349, -46.25, 277);
+    p3.position.set(-349, -45 + 0.6, 277);
     p3.receiveShadow = true;
     quarryGroup.add(p3);
 
-    const p3Berm = new THREE.Mesh(new THREE.TorusGeometry(26, 1.1, 8, 32), platformBorderMat);
-    p3Berm.rotateX(Math.PI / 2);
-    p3Berm.position.set(-349, -44.5, 277);
-    quarryGroup.add(p3Berm);
-
     // Забой 4 (Отметка -195м, Liebherr 9400, Богатая руда Сектор Восток на просторном дне)
-    const p4Geo = new THREE.CylinderGeometry(30, 32, 2.5, 36);
+    const p4Geo = new THREE.CylinderGeometry(32, 34, 1.2, 36);
     const p4 = new THREE.Mesh(p4Geo, platformMat);
-    p4.position.set(100, -196.25, 20);
+    p4.position.set(100, -195 + 0.6, 20);
     p4.receiveShadow = true;
     quarryGroup.add(p4);
-
-    const p4Berm = new THREE.Mesh(new THREE.TorusGeometry(30, 1.2, 8, 36), platformBorderMat);
-    p4Berm.rotateX(Math.PI / 2);
-    p4Berm.position.set(100, -194.5, 20);
-    quarryGroup.add(p4Berm);
 
     return quarryGroup;
   }
@@ -427,9 +407,9 @@ export class ModelBuilder {
         const side = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
         const groundY = ModelBuilder.getSurfaceHeight(pt.x, pt.z);
         const isPitOrRamp = edge.isRamp || (Math.abs(pt.y || 0) >= 1.0);
-        // В карьере берем истинный уклон рампы, на поверхности — высоту рельефа
-        const baseHeight = isPitOrRamp ? pt.y : Math.max(pt.y || 0, groundY);
-        const yElev = baseHeight + (isPitOrRamp ? 0.45 : 0.38);
+        // Дорожное полотно ВСЕГДА гарантированно выше рельефа:
+        const baseHeight = Math.max(pt.y || 0, groundY);
+        const yElev = baseHeight + (isPitOrRamp ? 0.70 : 0.38);
 
         const leftP = new THREE.Vector3(pt.x, yElev, pt.z).addScaledVector(side, -roadWidth / 2);
         const rightP = new THREE.Vector3(pt.x, yElev, pt.z).addScaledVector(side, roadWidth / 2);
@@ -449,8 +429,8 @@ export class ModelBuilder {
           const prevSide = new THREE.Vector3(-prevTang.z, 0, prevTang.x).normalize();
           const prevGroundY = ModelBuilder.getSurfaceHeight(prevPt.x, prevPt.z);
           const prevIsPitOrRamp = edge.isRamp || (Math.abs(prevPt.y || 0) >= 1.0);
-          const prevBaseHeight = prevIsPitOrRamp ? prevPt.y : Math.max(prevPt.y || 0, prevGroundY);
-          const prevYElev = prevBaseHeight + (prevIsPitOrRamp ? 0.45 : 0.38);
+          const prevBaseHeight = Math.max(prevPt.y || 0, prevGroundY);
+          const prevYElev = prevBaseHeight + (prevIsPitOrRamp ? 0.70 : 0.38);
 
           const pLeftPrev = new THREE.Vector3(prevPt.x, prevYElev, prevPt.z).addScaledVector(prevSide, -roadWidth / 2);
           const pRightPrev = new THREE.Vector3(prevPt.x, prevYElev, prevPt.z).addScaledVector(prevSide, roadWidth / 2);
@@ -553,43 +533,58 @@ export class ModelBuilder {
       }
     });
 
-    // Бесшовные круговые сопряжения (junction disks) на всех развилках и узлах (поверхность, бермы и дно карьера)
-    const junctionNodes = [
+    // Однотонные накладные кругляшки поверх стыков дорог и площадок забоев (скрывают неидеальности и убирают моргание)
+    const allCapNodes = [
       "n_surface_west", "n_surface_mid", "n_surface_east",
-      "n_w_b1_hub", "n_w_b2_hub",
+      "n_ramp_west_top", "n_ramp_east_top",
+      "n_w_b1", "n_w_b1_hub", "n_w_b2", "n_w_b2_hub", "n_w_b3", "n_w_b4",
+      "n_e_b1", "n_e_b2", "n_e_b3", "n_e_b4",
       "n_floor_hub",
-      "n_gof", "n_dump", "n_fuel", "n_service", "n_parking"
+      "n_gof", "n_dump", "n_fuel", "n_service", "n_parking",
+      "n_exc_waste", "n_exc_mid", "n_exc_deep", "n_exc_deep2"
     ];
 
-    const junctionTex = TextureGenerator.createJunctionTexture();
-    const junctionMat = new THREE.MeshStandardMaterial({
-      map: junctionTex,
+    const solidCapMat = new THREE.MeshStandardMaterial({
+      color: "#463E36", // Однотонный цвет утрамбованного гравия (без текстурных полос и стыков)
+      roughness: 0.95,
+      metalness: 0.05,
+      side: THREE.DoubleSide,
+      polygonOffset: true,
+      polygonOffsetFactor: -4.0,
+      polygonOffsetUnits: -8.0
+    });
+
+    const excavatorCapMat = new THREE.MeshStandardMaterial({
+      color: "#38312B", // Однотонный темный цвет рабочей площадки забоя
       roughness: 0.94,
       metalness: 0.06,
       side: THREE.DoubleSide,
       polygonOffset: true,
-      polygonOffsetFactor: -1.8,
-      polygonOffsetUnits: -3.5
+      polygonOffsetFactor: -5.0,
+      polygonOffsetUnits: -10.0
     });
 
-    junctionNodes.forEach(nodeId => {
+    allCapNodes.forEach(nodeId => {
       const node = quarry.nodes[nodeId];
       if (!node) return;
       const isFloorHub = (nodeId === "n_floor_hub");
-      const isSwitch = (node.type === "switch");
-      const r = isFloorHub ? 15 : (isSwitch ? 14 : 12);
+      const isExcavator = nodeId.startsWith("n_exc_");
+      // Радиус с запасом перекрывает ширину двухполосной дороги (18м полотно + 7м обочины)
+      const r = isExcavator ? 32 : (isFloorHub ? 19 : 17);
 
-      const juncGeo = new THREE.CircleGeometry(r, 32);
-      juncGeo.rotateX(-Math.PI / 2);
+      const capGeo = new THREE.CircleGeometry(r, 36);
+      capGeo.rotateX(-Math.PI / 2);
+
       const isPitOrRamp = (Math.abs(node.y || 0) >= 1.0);
       const groundY = ModelBuilder.getSurfaceHeight(node.x, node.z);
-      const baseY = isPitOrRamp ? node.y : Math.max(node.y || 0, groundY);
-      const yElev = baseY + (isPitOrRamp ? 0.44 : 0.37);
+      const baseY = Math.max(node.y || 0, groundY);
+      // Слегка приподнято над полотном дороги (+0.08м), чтобы гарантированно лежать поверх
+      const yElev = baseY + (isExcavator ? (isPitOrRamp ? 0.85 : 0.50) : (isPitOrRamp ? 0.78 : 0.45));
 
-      const jMesh = new THREE.Mesh(juncGeo, junctionMat);
-      jMesh.position.set(node.x, yElev, node.z);
-      jMesh.receiveShadow = true;
-      roadsGroup.add(jMesh);
+      const capMesh = new THREE.Mesh(capGeo, isExcavator ? excavatorCapMat : solidCapMat);
+      capMesh.position.set(node.x, yElev, node.z);
+      capMesh.receiveShadow = true;
+      roadsGroup.add(capMesh);
     });
 
     return roadsGroup;

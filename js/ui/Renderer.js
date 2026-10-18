@@ -353,9 +353,9 @@ export class Renderer {
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.anisotropy = 16;
-    const mat = new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true });
+    const mat = new THREE.SpriteMaterial({ map: tex, depthTest: true, depthWrite: false, transparent: true });
     const sprite = new THREE.Sprite(mat);
-    sprite.renderOrder = 999;
+    sprite.renderOrder = 20;
     sprite.scale.set(34, 13, 1);
     sprite.userData = { canvas, ctx, tex, lastLoad: -1, lastType: "" };
 
@@ -658,9 +658,9 @@ export class Renderer {
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.anisotropy = 16;
-    const mat = new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true });
+    const mat = new THREE.SpriteMaterial({ map: tex, depthTest: true, depthWrite: false, transparent: true });
     const sprite = new THREE.Sprite(mat);
-    sprite.renderOrder = 990;
+    sprite.renderOrder = 20;
     sprite.scale.set(78, 22, 1);
     return sprite;
   }
