@@ -385,18 +385,7 @@ export class Quarry {
 
   getNextNode(currentNodeId, targetNodeId, isLoaded) {
     if (!targetNodeId) {
-      if (isLoaded) {
-        targetNodeId = "n_gof";
-      } else {
-        const curr = this.nodes[currentNodeId];
-        if (curr && curr.type === "switch" && curr.branches && curr.branches.length > 0) {
-          const branchTarget = curr.branches[curr.activeBranch];
-          if (branchTarget) {
-            return branchTarget;
-          }
-        }
-        targetNodeId = "n_parking";
-      }
+      targetNodeId = isLoaded ? "n_gof" : "n_parking";
     }
 
     // Если самосвал на станции назначения — он прибыл

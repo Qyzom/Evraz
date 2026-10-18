@@ -1,0 +1,4 @@
+Игра сделанна на html,js,css и выложена на гитхаб:
+
+Исходный код (файлы проекта): https://github.com/Qyzom/Evraz
+Игра в браузере (просмотр): https://qyzom.github.io/Evraz/

@@ -13,10 +13,12 @@ export class Truck {
     this.typeKey = typeKey;
     this.quarry = quarry;
 
+    this.truckIndex = index;
+
     // Позиция на графе дорог
     this.currentNodeId = initialNodeId;
     this.nextNodeId = null;
-    this.targetStationId = null; // желаемая цель ('exc_1', 'exc_2', 'exc_3', 'gof', 'dump', 'service')
+    this.targetStationId = "n_parking"; // по умолчанию при отсутствии задач машина следует на стоянку
 
     const startNode = quarry.getNode(initialNodeId);
     this.x = startNode ? startNode.x : 0;
@@ -87,8 +89,10 @@ export class Truck {
 
       // Проверка критического остатка топлива (<25%) или ТС (<45%) для порожнего самосвала
       if (this.state === "moving_empty") {
-        // Если уже следует на АЗС, РМЦ или стоянку — НЕ перебиваем текущую цель!
-        if (this.targetStationId === "n_fuel" || this.targetStationId === "n_service" || this.targetStationId === "n_parking") {
+        if (!this.targetStationId) {
+          this.targetStationId = "n_parking";
+          this.selectNextNode();
+        } else if (this.targetStationId === "n_fuel" || this.targetStationId === "n_service" || this.targetStationId === "n_parking") {
           // Продолжает движение к назначенному инфраструктурному объекту
         } else if (this.fuel / this.config.fuelTank < 0.25) {
           this.targetStationId = "n_fuel";
@@ -168,12 +172,20 @@ export class Truck {
   }
 
   selectNextNode() {
+    if (!this.targetStationId) {
+      this.targetStationId = this.isLoaded ? (this.loadType === "waste" ? "n_dump" : "n_gof") : "n_parking";
+    }
+
     this.nextNodeId = this.quarry.getNextNode(this.currentNodeId, this.targetStationId, this.isLoaded);
     if (!this.nextNodeId) {
       // Тупик или достигли цели — проверяем прибытие на станцию
       const curr = this.quarry.getNode(this.currentNodeId);
-      if (curr && curr.type === "station") {
+      if (curr && (curr.type === "station" || this.currentNodeId === this.targetStationId || this.currentNodeId === "n_parking")) {
         this.handleArrivalAtStation(curr);
+      } else {
+        // Если застрял или цель недостижима — перенаправляем строго на стоянку
+        this.targetStationId = "n_parking";
+        this.nextNodeId = this.quarry.getNextNode(this.currentNodeId, "n_parking", false);
       }
     } else {
       const edge = this.quarry.getEdge(this.currentNodeId, this.nextNodeId);
@@ -315,6 +327,18 @@ export class Truck {
     } else if (stationNode.target === "parking" || stationNode.id === "n_parking") {
       this.state = "parked";
       this.actionTimer = 0;
+      this.targetStationId = null;
+      this.originExcavatorId = null;
+      // Расстановка по 14 боксам площадки отстоя (не толпятся в одной точке)
+      const slot = (this.truckIndex !== undefined ? this.truckIndex : 0);
+      const row = Math.floor(slot / 7);
+      const col = (slot % 7) - 3;
+      this.x = stationNode.x + col * 26;
+      this.z = (stationNode.z !== undefined ? stationNode.z : stationNode.y) + (row === 0 ? 20 : -20);
+      this.elevation = stationNode.y || 0;
+      this.y = this.elevation;
+      this.yaw = 0;
+      this.pitch = 0;
     } else if (stationNode.target && stationNode.target.startsWith("exc_")) {
       this.state = "queued_load";
     }
@@ -372,9 +396,9 @@ export class Truck {
       const bestExc = dispatcher.findOptimalExcavator();
       this.targetStationId = bestExc ? bestExc.id : "n_parking";
     }
-    // 4. Ручной режим: возвращается челночным рейсом в забой последней погрузки либо на стоянку
+    // 4. Ручной режим: если нет отдельного приказа — следует на стоянку в резерв
     else {
-      this.targetStationId = this.originExcavatorId || "n_parking";
+      this.targetStationId = "n_parking";
     }
 
     this.selectNextNode();
@@ -398,8 +422,8 @@ export class Truck {
       const bestExc = dispatcher.findOptimalExcavator();
       this.targetStationId = bestExc ? bestExc.id : "n_parking";
     } else {
-      // В ручном режиме возвращается в забой либо на площадку отстоя
-      this.targetStationId = this.originExcavatorId || "n_parking";
+      // В ручном режиме без задач — следует на стоянку
+      this.targetStationId = "n_parking";
     }
     this.selectNextNode();
   }
