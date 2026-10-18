@@ -56,7 +56,7 @@ export class Game {
     truckDistribution.forEach(dist => {
       for (let i = 0; i < dist.count; i++) {
         const startNode = spawnNodes[i % spawnNodes.length];
-        const truck = new Truck(`БелАЗ-${idCounter++}`, dist.type, startNode, this.quarry);
+        const truck = new Truck(`БелАЗ-${idCounter++}`, dist.type, startNode, this.quarry, this.trucks.length);
         this.trucks.push(truck);
       }
     });
@@ -178,7 +178,7 @@ export class Game {
       if (fuelPct < 25 && t.targetStationId !== "n_fuel" && t.state !== "servicing") {
         t.dispatchTo("n_fuel");
         this.dispatcher.addWarning(`[АВТОМАТИКА] ${t.id} направлен на АЗС (остаток топлива: ${Math.round(fuelPct)}%)`);
-      } else if (t.condition < 45 && t.targetStationId !== "n_service" && t.state !== "servicing") {
+      } else if (t.condition < 45 && t.targetStationId !== "n_service" && t.targetStationId !== "n_fuel" && t.state !== "servicing") {
         t.dispatchTo("n_service");
         this.dispatcher.addWarning(`[АВТОМАТИКА] ${t.id} направлен в РМЦ на ТО (состояние: ${Math.round(t.condition)}%)`);
       }

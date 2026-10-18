@@ -535,10 +535,6 @@
         Применение адаптивного регулирования маршрутов АСУ ГТК и двухсъездной топологии (Запад/Восток) позволило ликвидировать узкие места в узлах слияния потоков и обеспечить ритмичную подачу богатой руды на ГОФ-1.
       </div>
       </div>
-
-      <div class="modal-footer" style="padding: 14px 24px; border-top: 1px solid #2B333F; background: #171A1E; flex-shrink: 0; display: flex; justify-content: flex-end;">
-        <button class="btn-primary" id="btn-restart-shift" style="padding: 12px 28px; font-size: 14px; font-weight: 800; cursor: pointer;">НАЧАТЬ НОВУЮ СМЕНУ (1 ЧАС)</button>
-      </div>
     </div>
   </div>
 
@@ -558,7 +554,8 @@
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
-          <button class="ctrl-btn smenu-start-trigger" id="smenu-start-top-btn" style="background:#ED7D27;color:#FFFFFF;font-weight:800;padding:8px 20px;font-size:12px;cursor:pointer;white-space:nowrap;">НАЧАТЬ СМЕНУ</button>
+          <button class="ctrl-btn" id="smenu-resume-btn" style="display: none; background: #2E353F; color: #E2E8F0; font-weight: 700; padding: 9px 18px; font-size: 12px; cursor: pointer; white-space: nowrap; border-radius: 4px;">ВЕРНУТЬСЯ К СМЕНЕ</button>
+          <button class="ctrl-btn smenu-start-trigger" id="smenu-start-top-btn" style="background:#ED7D27;color:#FFFFFF;font-weight:800;padding:9px 24px;font-size:13px;cursor:pointer;white-space:nowrap;border:none;border-radius:4px;box-shadow:0 2px 8px rgba(237,125,39,0.35);">НАЧАТЬ СМЕНУ</button>
         </div>
       </div>
       <div class="modal-body" style="padding:22px;color:#E2E8F0;font-size:13px;line-height:1.6;">
@@ -647,10 +644,6 @@
         • <b>Режим «АСУ ГТК (АВТОМАТ)»:</b> алгоритмическое распределение потоков без очередей и простоев.<br>
         • <b>Пробел:</b> пауза и возобновление смены • <b>[Esc]:</b> моментальный сброс в свободный обзор.<br>
         • <b>Клавиши [0–9]:</b> [0] Общий обзор • [1] Забой 1 • [2] Забой 2 • [3] Забой 3 • [4] Забой 4 • [5] ГОФ-1 • [6] Отвал • [7] АЗС • [8] РМЦ • [9] ЦУП.</p>
-      </div>
-      <div class="modal-footer" style="padding:14px 22px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #2D3748;background:#171A1E;">
-        <button class="ctrl-btn" id="smenu-resume-btn" style="display: none; background: #2E353F; color: #E2E8F0; cursor: pointer;">ВЕРНУТЬСЯ К СМЕНЕ</button>
-        <button class="ctrl-btn" id="smenu-start-new-btn" style="background: #ED7D27; color: #FFFFFF; font-weight: 800; padding: 12px 28px; font-size: 13px; margin-left: auto; cursor: pointer;">НАЧАТЬ СМЕНУ (1 ЧАС)</button>
       </div>
     </div>
   </div>

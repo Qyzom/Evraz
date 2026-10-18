@@ -44,7 +44,7 @@ export class Quarry {
         type: "switch",
         name: "Центральная развилка (РМЦ / Въезды)",
         activeBranch: 0,
-        branches: ["n_service", "n_ramp_east_top", "n_surface_east", "n_surface_west"]
+        branches: ["n_fuel", "n_service", "n_ramp_east_top", "n_surface_east", "n_surface_west"]
       },
       n_surface_east: {
         id: "n_surface_east",
@@ -126,6 +126,7 @@ export class Quarry {
       { from: "n_surface_west", to: "n_fuel", distanceM: 300, maxSpeed: 35, isRamp: false },
       { from: "n_surface_west", to: "n_ramp_west_top", distanceM: 160, maxSpeed: 35, isRamp: false },
       { from: "n_surface_west", to: "n_surface_mid", distanceM: 520, maxSpeed: 45, isRamp: false },
+      { from: "n_surface_mid", to: "n_fuel", distanceM: 290, maxSpeed: 40, isRamp: false },
       { from: "n_surface_mid", to: "n_service", distanceM: 160, maxSpeed: 30, isRamp: false },
       { from: "n_surface_mid", to: "n_ramp_east_top", distanceM: 160, maxSpeed: 35, isRamp: false },
       { from: "n_surface_mid", to: "n_surface_east", distanceM: 300, maxSpeed: 45, isRamp: false },

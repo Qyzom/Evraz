@@ -7,7 +7,7 @@ import { EVRAZ_CONFIG } from "../config.js";
 import { sound } from "../audio.js";
 
 export class Truck {
-  constructor(id, typeKey, initialNodeId, quarry) {
+  constructor(id, typeKey, initialNodeId, quarry, index = 0) {
     this.id = id;
     this.config = EVRAZ_CONFIG.truckTypes[typeKey];
     this.typeKey = typeKey;
@@ -34,9 +34,11 @@ export class Truck {
     this.currentLoad = 0; // в тоннах
     this.loadType = null; // 'rich_ore', 'standard_ore', 'waste'
 
-    // Ресурсы
-    this.fuel = this.config.fuelTank * (0.6 + Math.random() * 0.35); // 60-95% бака
-    this.condition = 100; // 0..100% техсостояние
+    // Ресурсы: реалистичный стартовый остаток топлива от 35% до 85%
+    // чтобы заправки самосвалов происходили ритмично на протяжении всей 1-часовой смены
+    const basePct = 0.35 + ((index % 6) * 0.09) + (Math.random() * 0.05);
+    this.fuel = this.config.fuelTank * Math.min(0.90, basePct);
+    this.condition = 85 + (index % 4) * 3 + Math.random() * 5; // 85-98% техсостояние
 
     // Статусы: 'moving_empty', 'moving_loaded', 'queued_load', 'loading', 'queued_unload', 'unloading', 'servicing', 'stopped_breakdown'
     this.state = "moving_empty";
@@ -70,34 +72,45 @@ export class Truck {
                          this.state === "stopped_breakdown";
 
     if (this.state.startsWith("moving") && !isStationary) {
-      const fuelRatePerSec = (this.config.fuelRateMoving / 3600);
-      this.fuel = Math.max(0, this.fuel - fuelRatePerSec * dtSec * 3); // сбалансированный расход для смены 1ч
+      // Расход топлива при движении (учитывает 240т груза на затяжном подъеме и масштабирование 1ч смены)
+      const fuelMultiplier = this.isLoaded ? 11 : 8;
+      const fuelRatePerSec = (this.config.fuelRateMoving / 3600) * fuelMultiplier;
+      const fuelUsed = fuelRatePerSec * dtSec;
+      this.fuel = Math.max(0, this.fuel - fuelUsed);
+      if (dispatcher && dispatcher.stats) {
+        dispatcher.stats.totalFuelConsumedLiters = (dispatcher.stats.totalFuelConsumedLiters || 0) + fuelUsed;
+      }
+
       // Плавное падение ТС при движении (под нагрузкой быстрее)
-      const condWear = this.isLoaded ? 0.015 : 0.007;
+      const condWear = this.isLoaded ? 0.012 : 0.006;
       this.condition = Math.max(0, this.condition - condWear * dtSec);
 
-      // Проверка критического остатка топлива (<30%) или ТС (<70%) для порожнего самосвала
+      // Проверка критического остатка топлива (<25%) или ТС (<45%) для порожнего самосвала
       if (this.state === "moving_empty") {
-        if (this.fuel / this.config.fuelTank < 0.30 && this.targetStationId !== "n_fuel" && this.targetStationId !== "n_service") {
+        // Если уже следует на АЗС, РМЦ или стоянку — НЕ перебиваем текущую цель!
+        if (this.targetStationId === "n_fuel" || this.targetStationId === "n_service" || this.targetStationId === "n_parking") {
+          // Продолжает движение к назначенному инфраструктурному объекту
+        } else if (this.fuel / this.config.fuelTank < 0.25) {
           this.targetStationId = "n_fuel";
           this.selectNextNode();
-        } else if (this.condition < 70 && this.targetStationId !== "n_service" && this.targetStationId !== "n_parking") {
+        } else if (this.condition < 45) {
           this.targetStationId = "n_service";
           this.selectNextNode();
         }
       }
     } else if (isStationary && this.state !== "parked" && this.state !== "servicing" && this.state !== "stopped_breakdown") {
-      // На холостом ходу в заторе или очереди — минимальный расход ДТ
-      const fuelRatePerSec = (this.config.fuelRateIdle / 3600);
-      this.fuel = Math.max(0, this.fuel - fuelRatePerSec * dtSec * 2);
+      // На холостом ходу в заторе или очереди — умеренный расход ДТ
+      const idleRatePerSec = (this.config.fuelRateIdle / 3600) * 8;
+      const fuelUsed = idleRatePerSec * dtSec;
+      this.fuel = Math.max(0, this.fuel - fuelUsed);
+      if (dispatcher && dispatcher.stats) {
+        dispatcher.stats.totalFuelConsumedLiters = (dispatcher.stats.totalFuelConsumedLiters || 0) + fuelUsed;
+      }
     } else if (this.state === "parked") {
-      // На площадке отстоя / в ангаре: постепенное восстановление ТС и дозаправка
+      // На площадке отстоя / в ангаре: постепенное восстановление ТС (заправка строго на АЗС)
       this.idleTimeSec += dtSec;
       if (this.condition < 100) {
-        this.condition = Math.min(100, this.condition + 15 * dtSec);
-      }
-      if (this.fuel < this.config.fuelTank) {
-        this.fuel = Math.min(this.config.fuelTank, this.fuel + 35 * dtSec);
+        this.condition = Math.min(100, this.condition + 10 * dtSec);
       }
     }
 
@@ -134,9 +147,9 @@ export class Truck {
       }
     } else if (this.state === "servicing") {
       this.actionTimer += dtSec;
-      const isFuelStation = (this.currentNodeId === "n_fuel" || this.targetStationId === "n_fuel");
+      const isFuelStation = (this.currentNodeId === "n_fuel");
       if (isFuelStation) {
-        // Экспресс-заправка на АЗС ГТК: 240 л/с (полный бак 3500 л заправляется за ~15 сек)
+        // Экспресс-заправка на АЗС ГТК: ~240 л/с (полная заправка за ~15-20 сек)
         const speed = (EVRAZ_CONFIG.zones && EVRAZ_CONFIG.zones.fuel) ? EVRAZ_CONFIG.zones.fuel.serviceSpeed : 240;
         this.fuel = Math.min(this.config.fuelTank, this.fuel + speed * dtSec * 1.5);
         if (this.fuel >= this.config.fuelTank) {
@@ -144,11 +157,9 @@ export class Truck {
           this.finishService(dispatcher);
         }
       } else {
-        // Плановое ТО на РМЦ: устранение дефектов узлов и заправка
-        const speed = (EVRAZ_CONFIG.zones && EVRAZ_CONFIG.zones.service) ? EVRAZ_CONFIG.zones.service.serviceSpeed : 120;
-        this.fuel = Math.min(this.config.fuelTank, this.fuel + speed * dtSec);
+        // Ремонтно-механический цех (РМЦ): ТО узлов, гидравлики и замена шин (БЕЗ заправки — заправка на АЗС)
         this.condition = Math.min(100, this.condition + 25 * dtSec);
-        if (this.fuel >= this.config.fuelTank && this.condition >= 100) {
+        if (this.condition >= 100) {
           if (dispatcher && dispatcher.stats) dispatcher.stats.serviceCount++;
           this.finishService(dispatcher);
         }
@@ -266,8 +277,8 @@ export class Truck {
       this.nextNodeId = null;
       this.currentEdge = null;
 
-      // Если это целевая станция
-      if (p2 && p2.type === "station") {
+      // Если прибыли на целевую станцию (или если это конечная станция текущего маршрута)
+      if (p2 && (p2.id === this.targetStationId || (!this.targetStationId && p2.type === "station"))) {
         this.handleArrivalAtStation(p2);
       } else {
         this.selectNextNode();
@@ -284,9 +295,9 @@ export class Truck {
         // Порожний самосвал не должен повторно вставать в очередь на разгрузку
         this.state = "moving_empty";
         this.targetStationId = null;
-        if (this.fuel / this.config.fuelTank < 0.30) {
+        if (this.fuel / this.config.fuelTank < 0.25) {
           this.targetStationId = "n_fuel";
-        } else if (this.condition < 70) {
+        } else if (this.condition < 45) {
           this.targetStationId = "n_service";
         } else if (this.originExcavatorId) {
           this.targetStationId = this.originExcavatorId;
@@ -295,7 +306,10 @@ export class Truck {
         }
         this.selectNextNode();
       }
-    } else if (stationNode.target === "service" || stationNode.id === "n_service" || stationNode.target === "fuel" || stationNode.id === "n_fuel") {
+    } else if (stationNode.id === "n_fuel" || stationNode.target === "fuel") {
+      this.state = "servicing";
+      this.actionTimer = 0;
+    } else if (stationNode.id === "n_service" || stationNode.target === "service") {
       this.state = "servicing";
       this.actionTimer = 0;
     } else if (stationNode.target === "parking" || stationNode.id === "n_parking") {
@@ -343,13 +357,13 @@ export class Truck {
     this.targetStationId = null;
 
     // Логика направления порожнего самосвала после разгрузки:
-    // 1. Топливо < 30% -> на АЗС
-    if (this.fuel / this.config.fuelTank < 0.30) {
+    // 1. Топливо < 25% -> на АЗС (заправка ДТ)
+    if (this.fuel / this.config.fuelTank < 0.25) {
       this.targetStationId = "n_fuel";
-      dispatcher.addWarning(`[СЦБ/ТО] ${this.id}: остаток топлива менее 30%, направлен на заправку АЗС.`);
+      dispatcher.addWarning(`[СЦБ/АЗС] ${this.id}: остаток топлива менее 25%, направлен на заправку АЗС.`);
     }
-    // 2. Техсостояние < 70% -> на РМЦ
-    else if (this.condition < 70) {
+    // 2. Техсостояние < 45% -> на РМЦ (ТО оборудования)
+    else if (this.condition < 45) {
       this.targetStationId = "n_service";
       dispatcher.addWarning(`[СЦБ/ТО] ${this.id}: снижено техсостояние (${Math.round(this.condition)}%), следует на Базу ТО (РМЦ).`);
     }
@@ -367,9 +381,17 @@ export class Truck {
   }
 
   finishService(dispatcher) {
+    const wasFuelStation = (this.currentNodeId === "n_fuel");
     this.state = "moving_empty";
     this.targetStationId = null;
-    if (this.fuel / this.config.fuelTank < 0.30) {
+
+    if (wasFuelStation) {
+      dispatcher.addWarning(`[АЗС ГТК] ${this.id}: заправка завершена (бак 100%). Выход на линию.`);
+    } else {
+      dispatcher.addWarning(`[РМЦ] ${this.id}: техобслуживание завершено (ТС 100%). Выход на линию.`);
+    }
+
+    if (this.fuel / this.config.fuelTank < 0.25) {
       this.targetStationId = "n_fuel";
     } else if (dispatcher && dispatcher.aiMode) {
       // Алгоритм АСУ ГТК сразу выдает разнарядку в наиболее эффективный забой карьера
