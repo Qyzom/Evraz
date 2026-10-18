@@ -1,0 +1,1094 @@
+/* Индустриальный пульт ESIM DISPATCH */
+
+.hud-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Верхняя статусная панель */
+.top-bar {
+  pointer-events: auto;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  padding: 0 16px;
+  background: var(--evraz-panel-bg);
+  border-bottom: 2px solid var(--evraz-border);
+  backdrop-filter: blur(10px);
+  gap: 16px;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Фирменный знак с полосами бренда ЕВРАЗ */
+.brand-mark {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  justify-content: center;
+}
+
+.brand-mark .stripe {
+  width: 18px;
+  height: 3px;
+  border-radius: 1px;
+}
+
+.brand-mark .s1 { background: var(--evraz-orange-warm); }
+.brand-mark .s2 { background: var(--evraz-orange); }
+.brand-mark .s3 { background: var(--evraz-red); }
+
+.brand-title {
+  display: flex;
+  align-items: center;
+}
+
+.brand-logo-text {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  color: #FFFFFF;
+  font-family: system-ui, sans-serif;
+}
+
+/* Метрики смены: по левой стороне рядом с логотипом */
+.metrics-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.metric-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #171A1E;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--evraz-border);
+  min-width: 95px;
+  flex-shrink: 0;
+}
+
+.metric-card.highlight {
+  border-color: rgba(255, 184, 28, 0.45);
+  background: rgba(255, 184, 28, 0.08);
+}
+
+.metric-card.danger {
+  border-color: rgba(228, 0, 43, 0.4);
+}
+
+/* Фирменный акцентный уголок бренда внизу карточек */
+.metric-card::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 5px;
+  height: 5px;
+  background: var(--evraz-orange);
+}
+
+.metric-card.danger::after {
+  background: var(--evraz-red);
+}
+
+.metric-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  line-height: 1;
+}
+
+.metric-value {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.metric-value.gold {
+  color: var(--evraz-gold);
+}
+
+.metric-value.green {
+  color: var(--evraz-green);
+}
+
+.metric-value.red {
+  color: var(--evraz-red);
+}
+
+/* Кнопки управления справа */
+.top-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.ctrl-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  background: #242930;
+  color: var(--text-main);
+  border: 1px solid var(--evraz-border);
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
+  padding: 0 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.ctrl-btn:hover {
+  background: #2F3640;
+  border-color: var(--evraz-orange);
+}
+
+.ctrl-btn.btn-auto {
+  border-color: var(--evraz-orange);
+  background: rgba(237, 125, 39, 0.12);
+  color: var(--evraz-orange);
+}
+
+.ctrl-btn.btn-auto.active {
+  background: var(--evraz-orange);
+  color: #14171A;
+  border-color: var(--evraz-orange-warm);
+}
+
+/* Регулятор скорости времени в топбаре */
+.time-controls-group {
+  display: flex;
+  align-items: center;
+  background: #171B20;
+  border: 1px solid var(--evraz-border);
+  border-radius: 4px;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
+  box-sizing: border-box;
+  padding: 0 4px;
+  gap: 3px;
+  user-select: none;
+}
+
+.time-ctrl-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.6px;
+  padding: 0 4px;
+}
+
+.speed-btn {
+  background: #22272E;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94A3B8;
+  height: 28px;
+  min-width: 32px;
+  padding: 0 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 800;
+  font-family: "JetBrains Mono", monospace;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.speed-btn:hover {
+  background: #2D343E;
+  color: #F1F5F9;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.speed-btn.active {
+  background: var(--evraz-orange);
+  color: #14171A;
+  border-color: var(--evraz-orange-warm);
+  box-shadow: 0 0 8px rgba(237, 125, 39, 0.4);
+}
+
+/* Левая боковая панель АСУ ГТК (380px, на всю высоту под топбаром) */
+.hud-sidebar {
+  pointer-events: auto;
+  position: absolute;
+  top: 52px;
+  left: 0;
+  width: 380px;
+  height: calc(100vh - 52px);
+  background: rgba(18, 22, 26, 0.98);
+  border-right: 1px solid var(--evraz-border);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.journal-section {
+  flex: 1;
+  border-bottom: 2px solid var(--evraz-border);
+}
+
+.fleet-section {
+  flex: 1.15;
+}
+
+.sidebar-section-header {
+  height: 32px;
+  min-height: 32px;
+  background: #171C22;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ssh-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--evraz-orange);
+}
+
+.ssh-indicator {
+  width: 7px;
+  height: 7px;
+  background: var(--evraz-green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--evraz-green);
+}
+
+.ssh-indicator-fleet {
+  width: 7px;
+  height: 7px;
+  background: var(--evraz-gold);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--evraz-gold);
+}
+
+.ssh-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  background: #222933;
+  color: #94A3B8;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ssh-badge.fleet-active-count {
+  color: var(--evraz-gold);
+  border-color: rgba(255, 184, 28, 0.25);
+}
+
+.alerts-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  flex: 1;
+  padding: 8px 10px;
+}
+
+.alerts-feed::-webkit-scrollbar,
+.fleet-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.alerts-feed::-webkit-scrollbar-thumb,
+.fleet-list::-webkit-scrollbar-thumb {
+  background: var(--evraz-border);
+  border-radius: 2px;
+}
+
+.alerts-feed::-webkit-scrollbar-thumb:hover,
+.fleet-list::-webkit-scrollbar-thumb:hover {
+  background: var(--evraz-orange);
+}
+
+.fleet-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fleet-truck-row {
+  background: #171C23;
+  border: 1px solid #2B333F;
+  border-left: 3px solid #ED7D27;
+  border-radius: 4px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.12s ease;
+}
+
+.fleet-truck-row:hover {
+  background: #1E242C;
+  border-color: var(--evraz-orange);
+}
+
+.fleet-truck-row.active-track {
+  background: #222933;
+  border-left-color: var(--evraz-gold);
+  box-shadow: inset 0 0 10px rgba(255, 184, 28, 0.12);
+}
+
+.ftr-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ftr-id-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 800;
+  font-size: 11px;
+  color: #F1F5F9;
+}
+
+.ftr-status-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.ftr-status-badge.empty {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94A3B8;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.ftr-status-badge.ore {
+  background: rgba(16, 185, 129, 0.18);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.ftr-status-badge.waste {
+  background: rgba(237, 125, 39, 0.18);
+  color: #ED7D27;
+  border: 1px solid rgba(237, 125, 39, 0.35);
+}
+
+.ftr-status-badge.queue {
+  background: rgba(255, 184, 28, 0.18);
+  color: #FFB81C;
+  border: 1px solid rgba(255, 184, 28, 0.35);
+}
+
+.ftr-status-badge.service {
+  background: rgba(59, 130, 246, 0.18);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+}
+
+.ftr-status-badge.parked {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.ftr-status-badge.breakdown {
+  background: rgba(228, 0, 43, 0.2);
+  color: #F87171;
+  border: 1px solid #E4002B;
+}
+
+.ftr-mid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.ftr-dest {
+  color: #CBD5E1;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.ftr-cond {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #10B981;
+  white-space: nowrap;
+}
+
+.ftr-fuel {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #FFB81C;
+  white-space: nowrap;
+}
+
+.ftr-bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.ftr-btn-focus {
+  background: #252D37;
+  color: #E2E8F0;
+  border: 1px solid #3B4656;
+  border-radius: 3px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+}
+
+.ftr-btn-focus:hover {
+  background: var(--evraz-orange);
+  color: #12161A;
+  border-color: var(--evraz-orange);
+}
+
+.ftr-select-order {
+  flex: 1;
+  background: #14181E;
+  color: #E2E8F0;
+  border: 1px solid #3B4656;
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+}
+
+.ftr-select-order:hover,
+.ftr-select-order:focus {
+  border-color: var(--evraz-orange);
+}
+
+.ftr-select-order option {
+  background: #14181E;
+  color: #E2E8F0;
+}
+
+.alerts-feed::-webkit-scrollbar {
+  width: 5px;
+}
+
+.alerts-feed::-webkit-scrollbar-thumb {
+  background: var(--evraz-orange);
+  border-radius: 3px;
+}
+
+.alert-item {
+  line-height: 1.4;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.alert-time {
+  color: var(--evraz-gold);
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.alert-msg {
+  color: #E2E8F0;
+}
+
+/* Регламентный баннер */
+.start-hint-banner {
+  position: absolute;
+  top: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--evraz-orange);
+  color: #14171A;
+  padding: 7px 18px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Интерактивная карточка диспетчерского управления выбранным БелАЗом */
+.truck-control-card {
+  position: absolute;
+  top: 75px;
+  right: 20px;
+  width: 320px;
+  background: rgba(22, 26, 31, 0.96);
+  border: 1px solid var(--evraz-orange);
+  border-radius: 6px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  padding: 14px 16px;
+  pointer-events: auto;
+  z-index: 60;
+  animation: fadeInRight 0.2s ease-out;
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(15px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.tcard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--evraz-border);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.tcard-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tcard-badge {
+  font-family: monospace;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--evraz-gold);
+}
+
+.tcard-type {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.tcard-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.tcard-close:hover {
+  color: #FFFFFF;
+}
+
+.tcard-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.tcard-stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.tc-label {
+  color: var(--text-muted);
+}
+
+.tc-val {
+  font-weight: 700;
+  color: #FFFFFF;
+  font-family: monospace;
+}
+
+.tc-val.highlight {
+  color: var(--evraz-orange);
+}
+
+.tcard-orders-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--evraz-orange);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.tcard-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tcard-btn {
+  background: #242930;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.tcard-btn:hover {
+  background: var(--evraz-orange);
+  color: #14171A;
+  border-color: var(--evraz-orange);
+}
+
+.tcard-btn.service-btn {
+  border-color: rgba(0, 163, 224, 0.4);
+  color: #00A3E0;
+}
+
+.tcard-btn.service-btn:hover {
+  background: #00A3E0;
+  color: #FFFFFF;
+}
+
+.tcard-btn.follow-btn {
+  background: rgba(0, 163, 224, 0.15);
+  border-color: #00A3E0;
+  color: #38BDF8;
+  margin-bottom: 4px;
+}
+
+.tcard-btn.follow-btn:hover {
+  background: #00A3E0;
+  color: #FFFFFF;
+  border-color: #00A3E0;
+}
+
+/* ========================================================
+   Панель точек внимания и режимов камеры (АСУ ГТК)
+   Закреплена вдоль нижней кромки экрана
+   ======================================================== */
+.camera-poi-bar {
+  pointer-events: auto;
+  position: absolute;
+  bottom: 0;
+  left: 380px;
+  width: calc(100vw - 380px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 16px;
+  background: rgba(18, 22, 26, 0.96);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--evraz-border);
+  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.45);
+  z-index: 50;
+  overflow: visible;
+}
+
+.camera-poi-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: visible;
+}
+
+.camera-poi-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--evraz-orange);
+  white-space: nowrap;
+}
+
+.camera-poi-buttons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: visible;
+}
+
+.cam-btn {
+  background: #1E232A;
+  color: #C5D0DE;
+  border: 1px solid #333D4B;
+  padding: 5px 11px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.cam-btn:hover {
+  background: #2B333E;
+  color: #FFFFFF;
+  border-color: var(--evraz-orange-warm);
+}
+
+.cam-btn.active {
+  background: rgba(237, 125, 39, 0.22);
+  border-color: var(--evraz-orange);
+  color: #FFFFFF;
+  box-shadow: 0 0 10px rgba(237, 125, 39, 0.35);
+}
+
+.cam-btn.cam-reset {
+  border-color: rgba(160, 174, 192, 0.4);
+  color: #A0AEC0;
+}
+
+.cam-btn.cam-reset:hover {
+  background: #2D3748;
+  color: #FFFFFF;
+  border-color: #CBD5E0;
+}
+
+/* Выпадающие меню забоев и БелАЗов: всплывают вверх от нижней панели */
+.cam-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+  overflow: visible;
+}
+
+.cam-dropdown-wrapper.open,
+.cam-dropdown-wrapper:focus-within {
+  z-index: 550;
+}
+
+.cam-dropdown-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  background: #14181D;
+  border: 1px solid #4A5568;
+  border-radius: 6px;
+  padding: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 230px;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.85);
+  z-index: 600;
+  pointer-events: auto;
+}
+
+.cam-dropdown-menu.show {
+  display: flex !important;
+}
+
+.cam-dropdown-menu.trucks-grid {
+  min-width: 340px;
+  max-width: 420px;
+  display: none;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.cam-dropdown-menu.trucks-grid.show {
+  display: grid !important;
+}
+
+.cam-menu-item {
+  background: #1E232A;
+  color: #E2E8F0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 9px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s ease;
+}
+
+.cam-menu-item:hover {
+  background: var(--evraz-orange);
+  color: #14171A;
+  border-color: var(--evraz-orange);
+}
+
+.cam-menu-item.active {
+  background: rgba(237, 125, 39, 0.3);
+  border-color: var(--evraz-orange);
+  color: #FFB81C;
+}
+
+/* Индикатор активного слежения (Фирменный стиль ЕВРАЗ: графит, янтарь, матовая отделка) */
+.cam-tracking-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(22, 26, 31, 0.95);
+  border: 1px solid rgba(255, 184, 28, 0.45);
+  border-left: 3px solid #FFB81C;
+  border-radius: 4px;
+  padding: 4px 10px;
+  animation: trackingGlow 2.5s infinite ease-in-out;
+}
+
+@keyframes trackingGlow {
+  0%, 100% { box-shadow: 0 0 6px rgba(255, 184, 28, 0.2); }
+  50% { box-shadow: 0 0 14px rgba(255, 184, 28, 0.45); }
+}
+
+.tracking-pulse {
+  color: #FFB81C;
+  font-size: 11px;
+  animation: pulseBlink 1s infinite alternate;
+}
+
+@keyframes pulseBlink {
+  from { opacity: 0.35; transform: scale(0.9); }
+  to { opacity: 1.0; transform: scale(1.15); }
+}
+
+.tracking-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 0.6px;
+}
+
+.tracking-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: #FFB81C;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.tracking-cancel-btn {
+  background: #2A303A;
+  color: #CBD5E0;
+  border: 1px solid #4A5568;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: all 0.15s ease;
+}
+
+.tracking-cancel-btn:hover {
+  background: #E4002B;
+  color: #FFFFFF;
+  border-color: #E4002B;
+}
+
+/* Интерактивная карточка промышленного объекта / здания / забоя */
+.building-control-card {
+  position: absolute;
+  top: 75px;
+  right: 20px;
+  width: 340px;
+  background: rgba(22, 26, 31, 0.96);
+  border: 1px solid var(--evraz-orange);
+  border-radius: 6px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  padding: 14px 16px;
+  pointer-events: auto;
+  z-index: 60;
+  animation: fadeInRight 0.2s ease-out;
+}
+
+.bcard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--evraz-border);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.bcard-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bcard-badge {
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--evraz-gold);
+}
+
+.bcard-type {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.bcard-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 15px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: all 0.15s ease;
+}
+
+.bcard-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.bcard-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.bcard-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.bc-label {
+  color: var(--text-muted);
+}
+
+.bc-val {
+  font-weight: 700;
+  color: #E2E8F0;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.bc-val.highlight {
+  color: var(--evraz-gold);
+}
+
+.bc-progress-wrap {
+  width: 130px;
+  height: 8px;
+  background: #14181D;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #333C48;
+}
+
+.bc-progress-bar {
+  height: 100%;
+  background: var(--evraz-orange);
+  transition: width 0.3s ease;
+}
+
+.bcard-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bcard-btn {
+  background: #242930;
+  border: 1px solid var(--evraz-border);
+  color: #E2E8F0;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bcard-btn:hover {
+  background: #2E353F;
+  border-color: var(--evraz-orange);
+}
+
+.bcard-btn.focus-btn {
+  background: var(--evraz-orange);
+  border-color: var(--evraz-orange);
+  color: #14171A;
+}
+
+.bcard-btn.focus-btn:hover {
+  background: var(--evraz-orange-warm);
+}
+
