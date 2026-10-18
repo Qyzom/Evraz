@@ -407,9 +407,9 @@ export class ModelBuilder {
         const side = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
         const groundY = ModelBuilder.getSurfaceHeight(pt.x, pt.z);
         const isPitOrRamp = edge.isRamp || (Math.abs(pt.y || 0) >= 1.0);
-        // Дорожное полотно ВСЕГДА гарантированно выше рельефа:
+        // Дорожное полотно ВСЕГДА гарантированно выше рельефа карьера:
         const baseHeight = Math.max(pt.y || 0, groundY);
-        const yElev = baseHeight + (isPitOrRamp ? 0.70 : 0.38);
+        const yElev = baseHeight + (isPitOrRamp ? 1.05 : 0.42);
 
         const leftP = new THREE.Vector3(pt.x, yElev, pt.z).addScaledVector(side, -roadWidth / 2);
         const rightP = new THREE.Vector3(pt.x, yElev, pt.z).addScaledVector(side, roadWidth / 2);
@@ -430,7 +430,7 @@ export class ModelBuilder {
           const prevGroundY = ModelBuilder.getSurfaceHeight(prevPt.x, prevPt.z);
           const prevIsPitOrRamp = edge.isRamp || (Math.abs(prevPt.y || 0) >= 1.0);
           const prevBaseHeight = Math.max(prevPt.y || 0, prevGroundY);
-          const prevYElev = prevBaseHeight + (prevIsPitOrRamp ? 0.70 : 0.38);
+          const prevYElev = prevBaseHeight + (prevIsPitOrRamp ? 1.05 : 0.42);
 
           const pLeftPrev = new THREE.Vector3(prevPt.x, prevYElev, prevPt.z).addScaledVector(prevSide, -roadWidth / 2);
           const pRightPrev = new THREE.Vector3(prevPt.x, prevYElev, prevPt.z).addScaledVector(prevSide, roadWidth / 2);
@@ -483,7 +483,7 @@ export class ModelBuilder {
           for (let k = 0; k < 12; k++) shNormals.push(0, 0.9, 0.1);
 
           // 3. Цоколь / откосы насыпи вниз (3D Embankment Skirts): аккуратная посадка полотна в рельеф
-          const skirtDrop = isPitOrRamp ? 1.2 : 0.8;
+          const skirtDrop = isPitOrRamp ? 1.8 : 0.9;
           const pOutLPrev_bot = new THREE.Vector3(pOutLPrev.x, pOutLPrev.y - skirtDrop, pOutLPrev.z);
           const outerLeftP_bot = new THREE.Vector3(outerLeftP.x, outerLeftP.y - skirtDrop, outerLeftP.z);
           const pOutRPrev_bot = new THREE.Vector3(pOutRPrev.x, pOutRPrev.y - skirtDrop, pOutRPrev.z);
@@ -533,12 +533,12 @@ export class ModelBuilder {
       }
     });
 
-    // Однотонные накладные кругляшки поверх стыков дорог и площадок забоев (скрывают неидеальности и убирают моргание)
+    // Однотонные накладные кругляшки поверх РЕАЛЬНЫХ развилок, перекрестков и терминалов
+    // (исключены промежуточные линейные точки серпантина, чтобы не было кругов посреди ровной дороги)
     const allCapNodes = [
       "n_surface_west", "n_surface_mid", "n_surface_east",
       "n_ramp_west_top", "n_ramp_east_top",
-      "n_w_b1", "n_w_b1_hub", "n_w_b2", "n_w_b2_hub", "n_w_b3", "n_w_b4",
-      "n_e_b1", "n_e_b2", "n_e_b3", "n_e_b4",
+      "n_w_b1_hub", "n_w_b2_hub",
       "n_floor_hub",
       "n_gof", "n_dump", "n_fuel", "n_service", "n_parking",
       "n_exc_waste", "n_exc_mid", "n_exc_deep", "n_exc_deep2"
@@ -579,7 +579,7 @@ export class ModelBuilder {
       const groundY = ModelBuilder.getSurfaceHeight(node.x, node.z);
       const baseY = Math.max(node.y || 0, groundY);
       // Слегка приподнято над полотном дороги (+0.08м), чтобы гарантированно лежать поверх
-      const yElev = baseY + (isExcavator ? (isPitOrRamp ? 0.85 : 0.50) : (isPitOrRamp ? 0.78 : 0.45));
+      const yElev = baseY + (isExcavator ? (isPitOrRamp ? 1.25 : 0.55) : (isPitOrRamp ? 1.15 : 0.50));
 
       const capMesh = new THREE.Mesh(capGeo, isExcavator ? excavatorCapMat : solidCapMat);
       capMesh.position.set(node.x, yElev, node.z);

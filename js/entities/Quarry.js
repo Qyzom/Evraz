@@ -188,14 +188,30 @@ export class Quarry {
         while (diff < -Math.PI) diff += Math.PI * 2;
         while (diff > Math.PI) diff -= Math.PI * 2;
 
-        const numSub = 10;
+        const isRamp = Math.abs(v1.y - v2.y) > 5;
+        const numSub = 14;
         for (let i = 1; i < numSub; i++) {
           const frac = i / numSub;
           const th = th1 + diff * frac;
-          const r1 = Math.hypot(v1.x, v1.z / eRatio);
-          const r2 = Math.hypot(v2.x, v2.z / eRatio);
-          const r = r1 + (r2 - r1) * frac;
           const y = v1.y + (v2.y - v1.y) * frac;
+          
+          let r;
+          if (isRamp) {
+            // Радиус строго повторяет профиль откосов уступов карьера, исключая врезание в стены
+            if (y >= -45) {
+              r = 600 + ((y + 45) / 45) * 120;
+            } else if (y >= -95) {
+              r = 460 + ((y + 95) / 50) * 100;
+            } else if (y >= -145) {
+              r = 340 + ((y + 145) / 50) * 90;
+            } else {
+              r = 220 + ((y + 195) / 50) * 90;
+            }
+          } else {
+            const r1 = Math.hypot(v1.x, v1.z / eRatio);
+            const r2 = Math.hypot(v2.x, v2.z / eRatio);
+            r = r1 + (r2 - r1) * frac;
+          }
 
           pts.push(new THREE.Vector3(
             r * Math.cos(th),
