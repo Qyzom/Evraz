@@ -1,0 +1,46 @@
+/* Стили интерфейса ESIM DISPATCH по брендбуку ЕВРАЗ */
+:root {
+  /* Официальные цвета брендбука */
+  --evraz-orange: #ED7D27;
+  --evraz-orange-warm: #FFB81C;
+  --evraz-red: #E4002B;
+  --evraz-dark-graphite: #1E2227;
+  --evraz-bg-carbon: #14171A;
+  --evraz-panel-bg: rgba(26, 30, 36, 0.94);
+  --evraz-border: #2E343D;
+  --evraz-border-light: #3D4450;
+  --evraz-green: #10B981;
+  --text-main: #F5F7FA;
+  --text-muted: #8C96A3;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--evraz-bg-carbon);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+#quarry-canvas {
+  position: absolute;
+  top: 52px;
+  left: 380px;
+  width: calc(100vw - 380px);
+  height: calc(100vh - 52px);
+  z-index: 1;
+  cursor: grab;
+}
+
+#quarry-canvas:active {
+  cursor: grabbing;
+}
