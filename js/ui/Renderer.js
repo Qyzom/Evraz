@@ -17,6 +17,7 @@ export class Renderer {
     // 1. Создание Three.js WebGLRenderer с надежными резервными параметрами
     let renderer = null;
     const renderOpts = [
+      { canvas: this.canvas, antialias: true, alpha: false, logarithmicDepthBuffer: true, powerPreference: "high-performance", failIfMajorPerformanceCaveat: false },
       { canvas: this.canvas, antialias: true, alpha: false, powerPreference: "default", failIfMajorPerformanceCaveat: false },
       { canvas: this.canvas, antialias: false, alpha: false, failIfMajorPerformanceCaveat: false },
       { canvas: this.canvas }

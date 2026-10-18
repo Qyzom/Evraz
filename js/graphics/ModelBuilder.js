@@ -392,7 +392,7 @@ export class ModelBuilder {
     });
 
     const shoulderMat = new THREE.MeshStandardMaterial({
-      color: "#2C241E",
+      color: "#3E352B",
       roughness: 0.96,
       side: THREE.DoubleSide,
       polygonOffset: true,
@@ -427,9 +427,9 @@ export class ModelBuilder {
         const side = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
         const groundY = ModelBuilder.getSurfaceHeight(pt.x, pt.z);
         const isPitOrRamp = edge.isRamp || (Math.abs(pt.y || 0) >= 1.0);
-        // Дорожное полотно ВСЕГДА гарантированно выше рельефа:
-        const baseHeight = Math.max(pt.y || 0, groundY);
-        const yElev = baseHeight + (isPitOrRamp ? 0.72 : 0.38);
+        // В карьере берем истинный уклон рампы, на поверхности — высоту рельефа
+        const baseHeight = isPitOrRamp ? pt.y : Math.max(pt.y || 0, groundY);
+        const yElev = baseHeight + (isPitOrRamp ? 0.45 : 0.38);
 
         const leftP = new THREE.Vector3(pt.x, yElev, pt.z).addScaledVector(side, -roadWidth / 2);
         const rightP = new THREE.Vector3(pt.x, yElev, pt.z).addScaledVector(side, roadWidth / 2);
@@ -449,8 +449,8 @@ export class ModelBuilder {
           const prevSide = new THREE.Vector3(-prevTang.z, 0, prevTang.x).normalize();
           const prevGroundY = ModelBuilder.getSurfaceHeight(prevPt.x, prevPt.z);
           const prevIsPitOrRamp = edge.isRamp || (Math.abs(prevPt.y || 0) >= 1.0);
-          const prevBaseHeight = Math.max(prevPt.y || 0, prevGroundY);
-          const prevYElev = prevBaseHeight + (prevIsPitOrRamp ? 0.72 : 0.38);
+          const prevBaseHeight = prevIsPitOrRamp ? prevPt.y : Math.max(prevPt.y || 0, prevGroundY);
+          const prevYElev = prevBaseHeight + (prevIsPitOrRamp ? 0.45 : 0.38);
 
           const pLeftPrev = new THREE.Vector3(prevPt.x, prevYElev, prevPt.z).addScaledVector(prevSide, -roadWidth / 2);
           const pRightPrev = new THREE.Vector3(prevPt.x, prevYElev, prevPt.z).addScaledVector(prevSide, roadWidth / 2);
@@ -502,8 +502,8 @@ export class ModelBuilder {
 
           for (let k = 0; k < 12; k++) shNormals.push(0, 0.9, 0.1);
 
-          // 3. Цоколь / откосы насыпи вниз (3D Embankment Skirts): основание дороги уходит вглубь породы
-          const skirtDrop = isPitOrRamp ? 6.5 : 2.5;
+          // 3. Цоколь / откосы насыпи вниз (3D Embankment Skirts): аккуратная посадка полотна в рельеф
+          const skirtDrop = isPitOrRamp ? 1.2 : 0.8;
           const pOutLPrev_bot = new THREE.Vector3(pOutLPrev.x, pOutLPrev.y - skirtDrop, pOutLPrev.z);
           const outerLeftP_bot = new THREE.Vector3(outerLeftP.x, outerLeftP.y - skirtDrop, outerLeftP.z);
           const pOutRPrev_bot = new THREE.Vector3(pOutRPrev.x, pOutRPrev.y - skirtDrop, pOutRPrev.z);
@@ -553,7 +553,7 @@ export class ModelBuilder {
       }
     });
 
-    // Круговые сопряжения (junction disks) на всех развилках и узлах (поверхность, бермы и дно карьера)
+    // Бесшовные круговые сопряжения (junction disks) на всех развилках и узлах (поверхность, бермы и дно карьера)
     const junctionNodes = [
       "n_surface_west", "n_surface_mid", "n_surface_east",
       "n_w_b1_hub", "n_w_b2_hub",
@@ -561,31 +561,35 @@ export class ModelBuilder {
       "n_gof", "n_dump", "n_fuel", "n_service", "n_parking"
     ];
 
+    const junctionTex = TextureGenerator.createJunctionTexture();
+    const junctionMat = new THREE.MeshStandardMaterial({
+      map: junctionTex,
+      roughness: 0.94,
+      metalness: 0.06,
+      side: THREE.DoubleSide,
+      polygonOffset: true,
+      polygonOffsetFactor: -1.8,
+      polygonOffsetUnits: -3.5
+    });
+
     junctionNodes.forEach(nodeId => {
       const node = quarry.nodes[nodeId];
       if (!node) return;
       const isFloorHub = (nodeId === "n_floor_hub");
       const isSwitch = (node.type === "switch");
-      const r = isFloorHub ? 16 : (isSwitch ? 15 : 13);
+      const r = isFloorHub ? 15 : (isSwitch ? 14 : 12);
 
       const juncGeo = new THREE.CircleGeometry(r, 32);
       juncGeo.rotateX(-Math.PI / 2);
       const isPitOrRamp = (Math.abs(node.y || 0) >= 1.0);
       const groundY = ModelBuilder.getSurfaceHeight(node.x, node.z);
-      const baseY = Math.max(node.y || 0, groundY);
-      const yElev = baseY + (isPitOrRamp ? 0.76 : 0.42);
+      const baseY = isPitOrRamp ? node.y : Math.max(node.y || 0, groundY);
+      const yElev = baseY + (isPitOrRamp ? 0.44 : 0.37);
 
-      const jMesh = new THREE.Mesh(juncGeo, roadMat);
+      const jMesh = new THREE.Mesh(juncGeo, junctionMat);
       jMesh.position.set(node.x, yElev, node.z);
       jMesh.receiveShadow = true;
       roadsGroup.add(jMesh);
-
-      const ringGeo = new THREE.RingGeometry(r, r + 2.8, 32);
-      ringGeo.rotateX(-Math.PI / 2);
-      const ringMesh = new THREE.Mesh(ringGeo, shoulderMat);
-      ringMesh.position.set(node.x, yElev - 0.02, node.z);
-      ringMesh.receiveShadow = true;
-      roadsGroup.add(ringMesh);
     });
 
     return roadsGroup;

@@ -309,7 +309,16 @@ export class Dispatcher {
       }
     }
 
-    const queued = trucks.filter(t => t.currentNodeId === nodeId && t.state === "queued_unload");
+    // Если на станции разгрузки оказался порожний самосвал — немедленно отправляем его на линию
+    trucks.forEach(t => {
+      if (t.currentNodeId === nodeId && (t.state === "queued_unload" || t.state === "unloading") && t.currentLoad <= 0) {
+        t.state = "moving_empty";
+        t.targetStationId = t.originExcavatorId || "n_parking";
+        t.selectNextNode();
+      }
+    });
+
+    const queued = trucks.filter(t => t.currentNodeId === nodeId && t.state === "queued_unload" && t.currentLoad > 0);
 
     while (activeList.length < maxSlots && queued.length > 0) {
       const next = queued.shift();

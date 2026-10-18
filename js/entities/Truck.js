@@ -186,15 +186,11 @@ export class Truck {
   moveTowardsNextNode(dtSec, dispatcher) {
     if (!this.nextNodeId) return;
 
-    // Автоматический перевод стрелочного указателя СЦБ по маршруту приближающегося БелАЗа
+    // Автоматический выбор направления на развилке СЦБ по маршруту приближающегося БелАЗа
     if (this.pathProgress > 0.35 && !this.switchAlignedForEdge) {
       const nextNode = this.quarry.getNode(this.nextNodeId);
       if (nextNode && nextNode.type === "switch") {
-        const res = this.quarry.alignSwitchForTruck(this, this.nextNodeId);
-        if (res) {
-          dispatcher.addWarning(`[СЦБ] Стрелка «${res.switchNode.name}» переведена: ${res.branchName} (для ${this.id})`);
-          sound.playRadioBeep();
-        }
+        this.quarry.alignSwitchForTruck(this, this.nextNodeId);
         this.switchAlignedForEdge = true;
       }
     }
@@ -281,7 +277,24 @@ export class Truck {
 
   handleArrivalAtStation(stationNode) {
     if (stationNode.target === "gof" || stationNode.target === "dump") {
-      this.state = "queued_unload";
+      // Становимся на разгрузку только если самосвал реально везет горную массу!
+      if (this.currentLoad > 0) {
+        this.state = "queued_unload";
+      } else {
+        // Порожний самосвал не должен повторно вставать в очередь на разгрузку
+        this.state = "moving_empty";
+        this.targetStationId = null;
+        if (this.fuel / this.config.fuelTank < 0.30) {
+          this.targetStationId = "n_fuel";
+        } else if (this.condition < 70) {
+          this.targetStationId = "n_service";
+        } else if (this.originExcavatorId) {
+          this.targetStationId = this.originExcavatorId;
+        } else {
+          this.targetStationId = "n_parking";
+        }
+        this.selectNextNode();
+      }
     } else if (stationNode.target === "service" || stationNode.id === "n_service" || stationNode.target === "fuel" || stationNode.id === "n_fuel") {
       this.state = "servicing";
       this.actionTimer = 0;
@@ -324,6 +337,10 @@ export class Truck {
     this.currentLoad = 0;
     this.loadType = null;
     this.state = "moving_empty";
+    this.dumpTilt = 0;
+
+    // Сбрасываем завершённую станцию разгрузки (ГОФ / Отвал)
+    this.targetStationId = null;
 
     // Логика направления порожнего самосвала после разгрузки:
     // 1. Топливо < 30% -> на АЗС
@@ -336,13 +353,14 @@ export class Truck {
       this.targetStationId = "n_service";
       dispatcher.addWarning(`[СЦБ/ТО] ${this.id}: снижено техсостояние (${Math.round(this.condition)}%), следует на Базу ТО (РМЦ).`);
     }
-    // 3. В ручном режиме (если диспетчер не дал личного указания) -> на площадку отстоя в ангар!
-    else if (!dispatcher.aiMode && !this.targetStationId) {
-      this.targetStationId = "n_parking";
-      dispatcher.addWarning(`[ДИСПЕТЧЕР] ${this.id}: ожидает приказа, направлен на площадку отстоя РМЦ.`);
-    } else if (dispatcher.aiMode) {
+    // 3. Автоматический режим АСУ ГТК: оптимизация рудопотока
+    else if (dispatcher && dispatcher.aiMode) {
       const bestExc = dispatcher.findOptimalExcavator();
       this.targetStationId = bestExc ? bestExc.id : "n_parking";
+    }
+    // 4. Ручной режим: возвращается челночным рейсом в забой последней погрузки либо на стоянку
+    else {
+      this.targetStationId = this.originExcavatorId || "n_parking";
     }
 
     this.selectNextNode();
@@ -350,13 +368,16 @@ export class Truck {
 
   finishService(dispatcher) {
     this.state = "moving_empty";
-    if (dispatcher && dispatcher.aiMode) {
+    this.targetStationId = null;
+    if (this.fuel / this.config.fuelTank < 0.30) {
+      this.targetStationId = "n_fuel";
+    } else if (dispatcher && dispatcher.aiMode) {
       // Алгоритм АСУ ГТК сразу выдает разнарядку в наиболее эффективный забой карьера
       const bestExc = dispatcher.findOptimalExcavator();
       this.targetStationId = bestExc ? bestExc.id : "n_parking";
     } else {
-      // В ручном режиме направляется на площадку отстоя / ожидания
-      this.targetStationId = "n_parking";
+      // В ручном режиме возвращается в забой либо на площадку отстоя
+      this.targetStationId = this.originExcavatorId || "n_parking";
     }
     this.selectNextNode();
   }

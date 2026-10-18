@@ -234,17 +234,15 @@ export class Game {
       }
     });
 
-    // 3. Синхронизация стрелок по фактической загрузке забоев
+    // 3. Синхронизация логических развилок по фактической загрузке забоев
     const floorHub = this.quarry.getNode("n_floor_hub");
     if (floorHub) {
       const idxDeep1 = floorHub.branches.indexOf("n_exc_deep");
       const idxDeep2 = floorHub.branches.indexOf("n_exc_deep2");
       if (excLoads["n_exc_deep"] > excLoads["n_exc_deep2"] && floorHub.activeBranch !== idxDeep2 && idxDeep2 !== -1) {
         floorHub.activeBranch = idxDeep2;
-        this.dispatcher.addWarning("[АВТОМАТИКА] Стрелка дна переключена: Забой 4 (Liebherr 9400 Восток)");
       } else if (excLoads["n_exc_deep2"] > excLoads["n_exc_deep"] && floorHub.activeBranch !== idxDeep1 && idxDeep1 !== -1) {
         floorHub.activeBranch = idxDeep1;
-        this.dispatcher.addWarning("[АВТОМАТИКА] Стрелка дна переключена: Забой 1 (Liebherr 9400 Запад)");
       }
     }
 
