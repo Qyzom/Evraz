@@ -32,6 +32,10 @@ export class Dispatcher {
       efficiencyKpi: 100,
       totalTrips: 0,
       totalFuelConsumedLiters: 0,
+      refuelCount: 0,
+      serviceCount: 0,
+      breakdownCount: 0,
+      ordersGivenCount: 0,
       excavatorStats: {
         n_exc_deep: { name: "Забой 1 (Liebherr 9400 Запад)", tons: 0, trips: 0, grade: "Fe 62%" },
         n_exc_deep2: { name: "Забой 4 (Liebherr 9400 Восток)", tons: 0, trips: 0, grade: "Fe 64%" },
@@ -57,10 +61,10 @@ export class Dispatcher {
     };
 
     this.warnings = [];
-    this.shiftSecondsRemaining = 3600;
+    this.shiftSecondsRemaining = 600;
   }
 
-  update(dtSec, trucks, excavators, shiftSecondsRemaining = 3600) {
+  update(dtSec, trucks, excavators, shiftSecondsRemaining = 600) {
     this.trucks = trucks;
     this.shiftSecondsRemaining = shiftSecondsRemaining;
 
@@ -129,6 +133,7 @@ export class Dispatcher {
         ];
         const inc = incidents[Math.floor(Math.random() * incidents.length)];
         victim.condition = Math.max(15, Math.round(victim.condition - inc.loss));
+        this.stats.breakdownCount++;
         this.addWarning(`[СЦБ/ТО] ${victim.id}: ${inc.name}! ТС снижено на ${inc.loss}% (ТС: ${Math.round(victim.condition)}%).`);
         sound.playWarning();
 

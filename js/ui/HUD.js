@@ -165,6 +165,9 @@ export class HUD {
         const truck = this.game.trucks.find(t => t.id === truckId);
         if (truck) {
           truck.dispatchTo(targetId);
+          if (this.game.dispatcher && this.game.dispatcher.stats) {
+            this.game.dispatcher.stats.ordersGivenCount++;
+          }
           const targetNode = this.game.quarry.getNode(targetId);
           const targetName = targetNode ? targetNode.name : targetId;
           this.game.dispatcher.addWarning(`[ДИСПЕТЧЕР] ${truck.id} перенаправлен: ${targetName}`);
@@ -822,6 +825,19 @@ export class HUD {
       const badCount = (stats.badWasteDeliveries || 0) + (stats.badOreDeliveries || 0);
       elReadiness.textContent = `${Math.max(75, 100 - badCount * 5)}%`;
     }
+
+    // Дополнительные счётчики событий за смену
+    const elRefuels = document.getElementById("sum-refuels");
+    if (elRefuels) elRefuels.textContent = `${stats.refuelCount || 0} раз`;
+
+    const elServices = document.getElementById("sum-services");
+    if (elServices) elServices.textContent = `${stats.serviceCount || 0} раз`;
+
+    const elBreakdowns = document.getElementById("sum-breakdowns");
+    if (elBreakdowns) elBreakdowns.textContent = `${stats.breakdownCount || 0} раз`;
+
+    const elOrders = document.getElementById("sum-orders");
+    if (elOrders) elOrders.textContent = `${stats.ordersGivenCount || 0} раз`;
 
     // 2. Отрисовка диаграмм
     this.drawHourlyProdChart(stats.hourlyStats || []);

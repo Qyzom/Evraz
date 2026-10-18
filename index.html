@@ -62,7 +62,7 @@
       <div class="metrics-row">
         <div class="metric-card highlight">
           <span class="metric-label">Остаток смены</span>
-          <span class="metric-value gold" id="hud-shift-time-left">60:00</span>
+          <span class="metric-value gold" id="hud-shift-time-left">10:00</span>
         </div>
 
         <div class="metric-card">
@@ -307,7 +307,7 @@
       <div class="modal-body" style="padding:22px;color:#E2E8F0;font-size:13px;line-height:1.6;">
         <div style="background:#14181D;border-left:4px solid #FFB81C;padding:12px 18px;border-radius:4px;margin-bottom:18px;">
           <b style="color:#FFB81C;font-size:14px;">1. ЦЕЛЕВАЯ ФУНКЦИЯ ДИСПЕТЧЕРИЗАЦИИ:</b><br>
-          Максимизация операционной маржи смены (\(П_{чист} = В_{руда} - У_{простои} - Ш_{засор}\)) за счет динамической балансировки рудопотоков, разделения грузопотоков по двум независимым капитальным съездам и ликвидации технологических очередей.
+          Максимизация чистой прибыли смены: <b>П<sub>чист</sub> = Выручка<sub>руда</sub> − Убытки<sub>простои</sub> − Штрафы<sub>засор</sub></b> за счет динамической балансировки рудопотоков, разделения грузопотоков по двум независимым съездам (Запад / Восток) и ликвидации технологических очередей.
         </div>
 
         <h3 style="color:#ED7D27;margin-top:16px;border-bottom:1px solid #2D3748;padding-bottom:6px;font-size:14px;">2. ТОПОЛОГИЯ КАРЬЕРА И ДВУХСЪЕЗДНАЯ СХЕМА (DUAL-RAMP):</h3>
@@ -385,10 +385,11 @@
         </ul>
 
         <h3 style="color:#ED7D27;margin-top:16px;border-bottom:1px solid #2D3748;padding-bottom:6px;font-size:14px;">5. ИНСТРУМЕНТЫ ДИСПЕТЧЕРА И ГОРЯЧИЕ КЛАВИШИ:</h3>
-        <p>• <b>Интерактивные 3D стрелки:</b> клик ЛКМ по оранжевому шеврону на полотне переводит направление стрелки.<br>
-        • <b>Клик по БелАЗу:</b> активация телеметрии, слежение камеры и панель персонального приказа.<br>
-        • <b>Клик по объектам / забоям:</b> открывает карточку живой очереди, загрузки постов и выработки.<br>
-        • <b>Горячие клавиши:</b> [0] Общий обзор • [1] Забой 1 • [2] Забой 2 • [3] Забой 3 • [4] Забой 4 • [5] ГОФ-1 • [6] Отвал • [7] АЗС • [8] РМЦ • [9] ЦУП • [Esc] Свободная камера.</p>
+        <p>• <b>Клик по БелАЗу или [ФОКУС]:</b> слежение камеры, зум/вращение колесиком мыши без сброса фокуса.<br>
+        • <b>Кнопка [ПРИКАЗ ▾]:</b> адресная отправка самосвала в любой забой, на ГОФ, Отвал, АЗС или в Ангар РМЦ.<br>
+        • <b>Режим «АСУ ГТК (АВТОМАТ)»:</b> алгоритмическое распределение потоков без очередей и простоев.<br>
+        • <b>Пробел:</b> пауза и возобновление смены • <b>[Esc]:</b> моментальный сброс в свободный обзор.<br>
+        • <b>Клавиши [0–9]:</b> [0] Общий обзор • [1] Забой 1 • [2] Забой 2 • [3] Забой 3 • [4] Забой 4 • [5] ГОФ-1 • [6] Отвал • [7] АЗС • [8] РМЦ • [9] ЦУП.</p>
       </div>
       <div class="modal-footer" style="padding:14px 22px;display:flex;justify-content:flex-end;border-top:1px solid #2D3748;background:#171A1E;">
         <button class="ctrl-btn" id="btn-close-guide-footer" style="background:#ED7D27;color:#fff;font-weight:bold;padding:10px 28px;border-radius:4px;cursor:pointer;">ПРИНЯТО В РАБОТУ</button>
@@ -409,7 +410,7 @@
       </div>
 
       <!-- Сетка ключевых производственных показателей (8 метрик) -->
-      <div class="summary-metrics-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0;">
+      <div class="summary-metrics-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 10px 0;">
         <div class="sum-item">
           <div class="lbl">Товарная руда на ГОФ</div>
           <div class="val" id="sum-ore" style="color: #FFB81C;">0 т</div>
@@ -459,6 +460,33 @@
         </div>
       </div>
 
+      <!-- Дополнительная статистика событий за смену (сколько раз что произошло) -->
+      <div class="summary-metrics-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 0 0 16px 0;">
+        <div class="sum-item" style="background: rgba(255, 184, 28, 0.05); border-color: rgba(255, 184, 28, 0.2);">
+          <div class="lbl">Заправок на АЗС</div>
+          <div class="val" id="sum-refuels" style="color: #FFB81C; font-size: 18px;">0 раз</div>
+          <div class="sub-lbl" style="font-size: 10px; color: #94A3B8;">Экспресс-заправка ТРК</div>
+        </div>
+
+        <div class="sum-item" style="background: rgba(56, 189, 248, 0.05); border-color: rgba(56, 189, 248, 0.2);">
+          <div class="lbl">Техобслуживаний РМЦ</div>
+          <div class="val" id="sum-services" style="color: #38BDF8; font-size: 18px;">0 раз</div>
+          <div class="sub-lbl" style="font-size: 10px; color: #94A3B8;">Восстановление техсостояния</div>
+        </div>
+
+        <div class="sum-item" style="background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.2);">
+          <div class="lbl">Инцидентов и поломок</div>
+          <div class="val" id="sum-breakdowns" style="color: #EF4444; font-size: 18px;">0 раз</div>
+          <div class="sub-lbl" id="sum-breakdowns-sub" style="font-size: 10px; color: #94A3B8;">Шины, гидросистема, ДВС</div>
+        </div>
+
+        <div class="sum-item" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
+          <div class="lbl">Приказов диспетчера</div>
+          <div class="val" id="sum-orders" style="color: #10B981; font-size: 18px;">0 раз</div>
+          <div class="sub-lbl" style="font-size: 10px; color: #94A3B8;">Адресная маршрутизация</div>
+        </div>
+      </div>
+
       <!-- Блок диаграмм и графиков -->
       <div class="summary-charts-container" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; margin-bottom: 16px;">
         <!-- Диаграмма 1: Почасовая динамика добычи руды и вскрыши (12 часов) -->
@@ -501,7 +529,7 @@
         Применение адаптивного регулирования маршрутов АСУ ГТК и двухсъездной топологии (Запад/Восток) позволило ликвидировать узкие места в узлах слияния потоков и обеспечить ритмичную подачу богатой руды на ГОФ-1.
       </div>
 
-      <button class="btn-primary" id="btn-restart-shift" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 800;">НАЧАТЬ НОВУЮ СМЕНУ (1 ЧАС)</button>
+      <button class="btn-primary" id="btn-restart-shift" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 800;">НАЧАТЬ НОВУЮ СМЕНУ (10 МИНУТ)</button>
     </div>
   </div>
 
@@ -516,37 +544,36 @@
 
       <!-- Краткое описание и цель смены -->
       <div class="case-card" style="border-left: 4px solid #ED7D27;">
-        <h4 style="color: #FFB81C; margin-bottom: 6px; font-size: 13px;">ЦЕЛЬ СМЕНЫ И СУТЬ ИГРЫ</h4>
+        <h4 style="color: #FFB81C; margin-bottom: 6px; font-size: 13px;">КАК ИГРАТЬ И ЦЕЛЬ СМЕНЫ (10 МИНУТ)</h4>
         <p style="font-size: 12px; line-height: 1.6; color: #CBD5E1; margin: 0;">
-          Вы выступаете в роли главного горного диспетчера АСУ ГТК ЕВРАЗ. Ваша задача на <b>1-часовую смену</b> (12 часов виртуального горного времени): обеспечить максимальную отгрузку кондиционной титаномагнетитовой руды на дробильный комплекс ГОФ-1 и вывоз пустой породы на Северный отвал, исключая простой гидравлических экскаваторов Liebherr и скопление БелАЗов в заторах.
+          Вы — главный горный диспетчер. Ваша задача за <b>10 минут реального времени</b> (12 часов горной смены): обеспечить максимальную доставку руды на фабрику ГОФ-1 и пустой породы на Северный отвал, не допуская простоев экскаваторов и скопления БелАЗов в очередях.
         </p>
       </div>
 
       <!-- Инструктаж по управлению -->
       <div class="case-grid">
         <div class="case-card">
-          <h4 style="color: #ED7D27; margin-bottom: 6px; font-size: 12px;">УПРАВЛЕНИЕ ПАРКОМ И СЦБ</h4>
+          <h4 style="color: #ED7D27; margin-bottom: 6px; font-size: 12px;">3 ПРОСТЫХ ШАГА ДИСПЕТЧЕРА</h4>
           <p style="font-size: 11px; line-height: 1.5; color: #CBD5E1; margin: 0;">
-            • <b>Пульт парка слева:</b> Все 12 БелАЗов с живым статусом груза, бака и кнопкой «ФОКУС».<br>
-            • <b>Адресный приказ:</b> Выпадающий список «ПРИКАЗ ▾» мгновенно отправляет машину в любой забой, на ГОФ, Отвал, АЗС или РМЦ.<br>
-            • <b>Светофоры СЦБ:</b> Шевроны на развилках автоматически ориентируются по ходу движения транспорта.
+            <b>1. Распределяйте самосвалы:</b> в списке слева у каждого БелАЗа жмите «ПРИКАЗ ▾» и отправляйте в Забои 1–4.<br>
+            <b>2. Не путайте разгрузку:</b> богатая и рядовая руда едет на <b>ГОФ-1</b>, пустая вскрыша — строго на <b>Отвал</b>.<br>
+            <b>3. Следите за баком и ТО:</b> при остатке топлива &lt;30% шлите на <b>АЗС</b>, при износе &lt;70% — на <b>РМЦ</b>.
           </p>
         </div>
 
         <div class="case-card">
-          <h4 style="color: #ED7D27; margin-bottom: 6px; font-size: 12px;">СКОРОСТЬ ВРЕМЕНИ И КАМЕРА</h4>
+          <h4 style="color: #ED7D27; margin-bottom: 6px; font-size: 12px;">УПРАВЛЕНИЕ И АВТОМАТИЗАЦИЯ</h4>
           <p style="font-size: 11px; line-height: 1.5; color: #CBD5E1; margin: 0;">
-            • <b>Редактор скорости:</b> В шапке кнопки <code>0x</code>, <code>0.5x</code>, <code>1x</code>, <code>2x</code>, <code>4x</code>, <code>8x</code>.<br>
-            • <b>Клавиша [Пробел]:</b> Моментальная пауза/возобновление игры в любой момент!<br>
-            • <b>Режим «АСУ ГТК (АВТОМАТ)»:</b> Алгоритмическая оптимизация назначения забоев, балансировка рудопотоков и дозаправки.<br>
-            • <b>Клавиши:</b> [0] Общий вид • [1-4] Забои • [5] ГОФ • [6] Отвал • [7] АЗС • [8] РМЦ • [9] ЦУП • [Esc] Свободный обзор.
+            • <b>Режим «АСУ ГТК (АВТОМАТ)»:</b> нажмите кнопку в шапке, и система сама идеально распределит все 12 БелАЗов.<br>
+            • <b>Управление камерой:</b> клик по машине захватывает фокус. Крутите колесико мыши и вращайте камеру. Сброс — клавиша <code>Esc</code>.<br>
+            • <b>Скорость:</b> в шапке кнопки <code>1x</code>, <code>2x</code>, <code>4x</code>, <code>8x</code>. Пауза — <code>[Пробел]</code>.
           </p>
         </div>
       </div>
 
       <div class="modal-footer" style="padding: 14px 0 0 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08);">
         <button class="ctrl-btn" id="smenu-resume-btn" style="display: none; background: #2E353F; color: #E2E8F0; cursor: pointer; position: relative; z-index: 10;">ВЕРНУТЬСЯ К СМЕНЕ</button>
-        <button class="ctrl-btn" id="smenu-start-new-btn" style="background: #ED7D27; color: #FFFFFF; font-weight: 800; padding: 12px 28px; font-size: 13px; margin-left: auto; cursor: pointer; position: relative; z-index: 10;">НАЧАТЬ СМЕНУ (1 ЧАС)</button>
+        <button class="ctrl-btn" id="smenu-start-new-btn" style="background: #ED7D27; color: #FFFFFF; font-weight: 800; padding: 12px 28px; font-size: 13px; margin-left: auto; cursor: pointer; position: relative; z-index: 10;">НАЧАТЬ СМЕНУ (10 МИНУТ)</button>
       </div>
     </div>
   </div>

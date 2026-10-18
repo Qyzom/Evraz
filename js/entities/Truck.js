@@ -140,6 +140,7 @@ export class Truck {
         const speed = (EVRAZ_CONFIG.zones && EVRAZ_CONFIG.zones.fuel) ? EVRAZ_CONFIG.zones.fuel.serviceSpeed : 240;
         this.fuel = Math.min(this.config.fuelTank, this.fuel + speed * dtSec * 1.5);
         if (this.fuel >= this.config.fuelTank) {
+          if (dispatcher && dispatcher.stats) dispatcher.stats.refuelCount++;
           this.finishService(dispatcher);
         }
       } else {
@@ -148,6 +149,7 @@ export class Truck {
         this.fuel = Math.min(this.config.fuelTank, this.fuel + speed * dtSec);
         this.condition = Math.min(100, this.condition + 25 * dtSec);
         if (this.fuel >= this.config.fuelTank && this.condition >= 100) {
+          if (dispatcher && dispatcher.stats) dispatcher.stats.serviceCount++;
           this.finishService(dispatcher);
         }
       }
