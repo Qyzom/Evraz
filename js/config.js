@@ -12,7 +12,7 @@ export const EVRAZ_CONFIG = {
     ironGrade: 16.6, // %
     annualCapacity: 46_000_000, // тонн/год
     shiftDurationHours: 12,
-    gameShiftSeconds: 600, // 10 минут реального времени = 12 часов горной смены
+    gameShiftSeconds: 3600, // 1 час реального времени = 12 часов горной смены
   },
 
   // Финансовые показатели простоев и работы (из кейса)

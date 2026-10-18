@@ -844,15 +844,18 @@ export class HUD {
     this.drawPitDistChart(stats.excavatorStats || {});
     this.drawFleetUtilChart(stats.timeUtilization || {});
 
-    // Кнопка перезапуска смены
+    // Кнопки перезапуска смены (в шапке и в подвале)
+    const handleRestart = () => {
+      modal.classList.remove("active");
+      this.game.restart();
+      sound.playClick();
+    };
+
     const restartBtn = document.getElementById("btn-restart-shift");
-    if (restartBtn) {
-      restartBtn.onclick = () => {
-        modal.classList.remove("active");
-        this.game.restart();
-        sound.playClick();
-      };
-    }
+    if (restartBtn) restartBtn.onclick = handleRestart;
+
+    const restartTopBtn = document.getElementById("btn-restart-shift-top");
+    if (restartTopBtn) restartTopBtn.onclick = handleRestart;
 
     modal.classList.add("active");
   }

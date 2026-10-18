@@ -1092,3 +1092,208 @@
   background: var(--evraz-orange-warm);
 }
 
+/* ========================================================
+   Адаптивное масштабирование интерфейса для небольших мониторов
+   ======================================================== */
+@media (max-width: 1440px), (max-height: 850px) {
+  :root {
+    --sidebar-w: 300px;
+    --topbar-h: 46px;
+  }
+
+  .top-bar {
+    height: 46px;
+    min-height: 46px;
+    max-height: 46px;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .brand-logo-text {
+    font-size: 14px;
+    letter-spacing: 1.5px;
+  }
+
+  .metrics-row {
+    gap: 5px;
+  }
+
+  .metric-card {
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    min-width: 78px;
+    padding: 2px 7px;
+  }
+
+  .metric-label {
+    font-size: 8px;
+  }
+
+  .metric-value {
+    font-size: 11px;
+  }
+
+  .time-controls-group {
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    padding: 0 2px;
+    gap: 2px;
+  }
+
+  .time-ctrl-label {
+    font-size: 9px;
+    padding: 0 2px;
+  }
+
+  .speed-btn {
+    height: 24px;
+    min-width: 26px;
+    padding: 0 4px;
+    font-size: 10px;
+  }
+
+  .ctrl-btn {
+    padding: 6px 10px;
+    font-size: 10px;
+    height: 32px;
+  }
+
+  .hud-sidebar {
+    width: 300px;
+    top: 46px;
+    height: calc(100vh - 46px);
+  }
+
+  #quarry-canvas {
+    top: 46px;
+    left: 300px;
+    width: calc(100vw - 300px);
+    height: calc(100vh - 46px);
+  }
+
+  .camera-poi-bar {
+    left: 300px;
+    width: calc(100vw - 300px);
+    padding: 5px 10px;
+    gap: 6px;
+  }
+
+  .camera-poi-label {
+    font-size: 9px;
+  }
+
+  .cam-btn {
+    padding: 4px 7px;
+    font-size: 9.5px;
+  }
+
+  .truck-control-card,
+  .building-control-card {
+    top: 52px;
+    right: 10px;
+    width: 270px;
+    padding: 10px 12px;
+    transform: scale(0.92);
+    transform-origin: top right;
+  }
+
+  .case-doc-container,
+  .summary-container.detailed-summary {
+    max-width: 90vw !important;
+    height: 88vh !important;
+    transform: scale(0.92);
+  }
+}
+
+@media (max-width: 1200px), (max-height: 720px) {
+  :root {
+    --sidebar-w: 260px;
+    --topbar-h: 42px;
+  }
+
+  .top-bar {
+    height: 42px;
+    min-height: 42px;
+    max-height: 42px;
+    padding: 0 6px;
+    gap: 5px;
+  }
+
+  .brand-logo-text {
+    font-size: 12px;
+  }
+
+  .metric-card {
+    height: 28px;
+    min-height: 28px;
+    max-height: 28px;
+    min-width: 65px;
+    padding: 1px 5px;
+  }
+
+  .metric-label {
+    font-size: 7.5px;
+  }
+
+  .metric-value {
+    font-size: 10px;
+  }
+
+  .time-controls-group {
+    height: 28px;
+    min-height: 28px;
+    max-height: 28px;
+  }
+
+  .speed-btn {
+    height: 22px;
+    min-width: 22px;
+    padding: 0 2px;
+    font-size: 9px;
+  }
+
+  .ctrl-btn {
+    padding: 4px 7px;
+    font-size: 9px;
+    height: 28px;
+  }
+
+  .hud-sidebar {
+    width: 260px;
+    top: 42px;
+    height: calc(100vh - 42px);
+  }
+
+  #quarry-canvas {
+    top: 42px;
+    left: 260px;
+    width: calc(100vw - 260px);
+    height: calc(100vh - 42px);
+  }
+
+  .camera-poi-bar {
+    left: 260px;
+    width: calc(100vw - 260px);
+    padding: 4px 6px;
+  }
+
+  .cam-btn {
+    padding: 3px 5px;
+    font-size: 8.5px;
+  }
+
+  .truck-control-card,
+  .building-control-card {
+    width: 250px;
+    transform: scale(0.82);
+    transform-origin: top right;
+  }
+
+  .case-doc-container,
+  .summary-container.detailed-summary {
+    transform: scale(0.78);
+  }
+}
+

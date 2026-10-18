@@ -62,7 +62,7 @@
       <div class="metrics-row">
         <div class="metric-card highlight">
           <span class="metric-label">Остаток смены</span>
-          <span class="metric-value gold" id="hud-shift-time-left">10:00</span>
+          <span class="metric-value gold" id="hud-shift-time-left">60:00</span>
         </div>
 
         <div class="metric-card">
@@ -402,14 +402,20 @@
 
   <!-- Модальное окно завершения смены с подробной статистикой и диаграммами -->
   <div class="modal-overlay" id="shift-summary-modal">
-    <div class="summary-container detailed-summary" style="max-width: 960px; max-height: 92vh; overflow-y: auto;">
-      <div class="summary-header-block">
-        <div class="badge" style="background: rgba(237, 125, 39, 0.15); color: #ED7D27;">АСУ ГТК • ИТОГОВЫЙ ОТЧЕТ</div>
-        <h2 style="font-size: 24px; color: #FFFFFF; margin: 4px 0;">ГОРНАЯ СМЕНА ЗАВЕРШЕНА (12 ЧАСОВ)</h2>
-        <p class="summary-subtitle" style="margin: 0; color: #94A3B8;">Комплексная аналитика горно-транспортного комплекса, баланс рудопотоков и диаграммы эффективности</p>
+    <div class="summary-container detailed-summary" style="max-width: 960px; height: 88vh; padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+      <div class="summary-header-block" style="padding: 18px 24px; border-bottom: 1px solid #2B333F; background: #171A1E; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+        <div>
+          <div class="badge" style="background: rgba(237, 125, 39, 0.15); color: #ED7D27; margin-bottom: 4px;">АСУ ГТК • ИТОГОВЫЙ ОТЧЕТ</div>
+          <h2 style="font-size: 20px; color: #FFFFFF; margin: 2px 0;">ГОРНАЯ СМЕНА ЗАВЕРШЕНА (12 ЧАСОВ)</h2>
+          <p class="summary-subtitle" style="margin: 0; color: #94A3B8; font-size: 11px;">Комплексная аналитика горно-транспортного комплекса, баланс рудопотоков и диаграммы эффективности</p>
+        </div>
+        <div>
+          <button class="btn-primary" id="btn-restart-shift-top" style="padding: 9px 20px; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap;">НОВАЯ СМЕНА</button>
+        </div>
       </div>
 
-      <!-- Сетка ключевых производственных показателей (8 метрик) -->
+      <div class="summary-body-scroll" style="padding: 20px 24px; overflow-y: auto; flex: 1;">
+        <!-- Сетка ключевых производственных показателей (8 метрик) -->
       <div class="summary-metrics-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 10px 0;">
         <div class="sum-item">
           <div class="lbl">Товарная руда на ГОФ</div>
@@ -524,12 +530,15 @@
         </div>
       </div>
 
-      <div class="sum-conclusion" style="margin-bottom: 16px;">
+      <div class="sum-conclusion" style="margin-bottom: 8px;">
         <strong>Экономический результат смены:</strong><br>
         Применение адаптивного регулирования маршрутов АСУ ГТК и двухсъездной топологии (Запад/Восток) позволило ликвидировать узкие места в узлах слияния потоков и обеспечить ритмичную подачу богатой руды на ГОФ-1.
       </div>
+      </div>
 
-      <button class="btn-primary" id="btn-restart-shift" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 800;">НАЧАТЬ НОВУЮ СМЕНУ (10 МИНУТ)</button>
+      <div class="modal-footer" style="padding: 14px 24px; border-top: 1px solid #2B333F; background: #171A1E; flex-shrink: 0; display: flex; justify-content: flex-end;">
+        <button class="btn-primary" id="btn-restart-shift" style="padding: 12px 28px; font-size: 14px; font-weight: 800; cursor: pointer;">НАЧАТЬ НОВУЮ СМЕНУ (1 ЧАС)</button>
+      </div>
     </div>
   </div>
 
@@ -545,7 +554,7 @@
           </div>
           <div>
             <h2 style="margin:0;font-size:18px;color:#ED7D27;letter-spacing:0.8px;">ТЕХНОЛОГИЧЕСКИЙ ПАСПОРТ ДИСПЕТЧЕРА АСУ ГТК «Evraz»</h2>
-            <div style="font-size:11px;color:#A0AEC0;">РЕГЛАМЕНТ ТР-ГТК-2026/04 • ЕВРАЗ КГОК • КАРЬЕРНАЯ ПЕРСПЕКТИВА • СМЕНА 10 МИНУТ</div>
+            <div style="font-size:11px;color:#A0AEC0;">РЕГЛАМЕНТ ТР-ГТК-2026/04 • ЕВРАЗ КГОК • КАРЬЕРНАЯ ПЕРСПЕКТИВА • СМЕНА 1 ЧАС</div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
@@ -554,8 +563,8 @@
       </div>
       <div class="modal-body" style="padding:22px;color:#E2E8F0;font-size:13px;line-height:1.6;">
         <div style="background:#14181D;border-left:4px solid #FFB81C;padding:12px 18px;border-radius:4px;margin-bottom:18px;">
-          <b style="color:#FFB81C;font-size:14px;">1. ЦЕЛЕВАЯ ФУНКЦИЯ ДИСПЕТЧЕРИЗАЦИИ (СМЕНА 10 МИНУТ):</b><br>
-          Вы — главный диспетчер горно-транспортного комплекса. За <b>10 минут реального времени</b> (моделирующих 12 часов горной смены) ваша задача — максимизировать чистую прибыль: <b>П<sub>чист</sub> = Выручка<sub>руда</sub> − Убытки<sub>простои</sub> − Штрафы<sub>засор</sub></b> за счет динамической балансировки рудопотоков, разделения грузопотоков по двум независимым съездам (Запад / Восток) и ликвидации технологических очередей.
+          <b style="color:#FFB81C;font-size:14px;">1. ЦЕЛЕВАЯ ФУНКЦИЯ ДИСПЕТЧЕРИЗАЦИИ (СМЕНА 1 ЧАС):</b><br>
+          Вы — главный диспетчер горно-транспортного комплекса. За <b>1 час реального времени</b> (моделирующий 12 часов горной смены) ваша задача — максимизировать чистую прибыль: <b>П<sub>чист</sub> = Выручка<sub>руда</sub> − Убытки<sub>простои</sub> − Штрафы<sub>засор</sub></b> за счет динамической балансировки рудопотоков, разделения грузопотоков по двум независимым съездам (Запад / Восток) и ликвидации технологических очередей.
         </div>
 
         <h3 style="color:#ED7D27;margin-top:16px;border-bottom:1px solid #2D3748;padding-bottom:6px;font-size:14px;">2. ТОПОЛОГИЯ КАРЬЕРА И ДВУХСЪЕЗДНАЯ СХЕМА (DUAL-RAMP):</h3>
@@ -641,7 +650,7 @@
       </div>
       <div class="modal-footer" style="padding:14px 22px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #2D3748;background:#171A1E;">
         <button class="ctrl-btn" id="smenu-resume-btn" style="display: none; background: #2E353F; color: #E2E8F0; cursor: pointer;">ВЕРНУТЬСЯ К СМЕНЕ</button>
-        <button class="ctrl-btn" id="smenu-start-new-btn" style="background: #ED7D27; color: #FFFFFF; font-weight: 800; padding: 12px 28px; font-size: 13px; margin-left: auto; cursor: pointer;">НАЧАТЬ СМЕНУ (10 МИНУТ)</button>
+        <button class="ctrl-btn" id="smenu-start-new-btn" style="background: #ED7D27; color: #FFFFFF; font-weight: 800; padding: 12px 28px; font-size: 13px; margin-left: auto; cursor: pointer;">НАЧАТЬ СМЕНУ (1 ЧАС)</button>
       </div>
     </div>
   </div>

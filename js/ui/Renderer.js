@@ -951,8 +951,9 @@ export class Renderer {
   }
 
   resize() {
-    const width = this.canvas.clientWidth || Math.max(800, window.innerWidth - 380);
-    const height = this.canvas.clientHeight || Math.max(600, window.innerHeight - 52);
+    const rect = this.canvas.getBoundingClientRect();
+    const width = Math.max(200, Math.round(rect.width || this.canvas.clientWidth || window.innerWidth));
+    const height = Math.max(200, Math.round(rect.height || this.canvas.clientHeight || window.innerHeight));
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height, false);

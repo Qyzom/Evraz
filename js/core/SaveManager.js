@@ -37,7 +37,7 @@ export class SaveManager {
     if (slotIndex < 1 || slotIndex > 3) return false;
 
     // Расчет текущего виртуального времени смены
-    const totalSec = game.shiftDurationSec || 600;
+    const totalSec = game.shiftDurationSec || 3600;
     const progress = 1 - (game.shiftSecondsRemaining / totalSec);
     const shiftHours = 8 + progress * 12;
     const hours = Math.floor(shiftHours);

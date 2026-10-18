@@ -61,10 +61,10 @@ export class Dispatcher {
     };
 
     this.warnings = [];
-    this.shiftSecondsRemaining = 600;
+    this.shiftSecondsRemaining = EVRAZ_CONFIG.company.gameShiftSeconds || 3600;
   }
 
-  update(dtSec, trucks, excavators, shiftSecondsRemaining = 600) {
+  update(dtSec, trucks, excavators, shiftSecondsRemaining = 3600) {
     this.trucks = trucks;
     this.shiftSecondsRemaining = shiftSecondsRemaining;
 
@@ -194,8 +194,8 @@ export class Dispatcher {
     });
 
     // 3. Подсчет простоев и финансовой эффективности
-    const totalShiftSec = EVRAZ_CONFIG.company.gameShiftSeconds || 600;
-    const timeScale = (EVRAZ_CONFIG.company.shiftDurationHours * 3600) / totalShiftSec; // 72 для 10-мин смены
+    const totalShiftSec = EVRAZ_CONFIG.company.gameShiftSeconds || 3600;
+    const timeScale = (EVRAZ_CONFIG.company.shiftDurationHours * 3600) / totalShiftSec; // 12 для 1-часовой смены (1ч игры = 12ч на производстве)
 
     let idleTrucksCount = 0;
 

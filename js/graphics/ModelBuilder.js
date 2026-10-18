@@ -310,42 +310,39 @@ export class ModelBuilder {
     floorMesh.receiveShadow = true;
     quarryGroup.add(floorMesh);
 
-    // 6. Компактные аккуратные рабочие площадки забоев (вписаны строго в уровень бермы)
+    // 6. Аккуратные скальные постаменты забоев (цоколи под рабочими площадками)
     const platformMat = new THREE.MeshStandardMaterial({
-      color: "#38312B",
-      roughness: 0.94,
-      metalness: 0.06,
-      side: THREE.DoubleSide,
-      polygonOffset: true,
-      polygonOffsetFactor: -4.5,
-      polygonOffsetUnits: -9.0
+      color: "#2C2621",
+      roughness: 0.96,
+      metalness: 0.04,
+      side: THREE.DoubleSide
     });
 
     // Забой 1 (Отметка -195м, Liebherr 9400, Богатая руда на просторном дне)
-    const p1Geo = new THREE.CylinderGeometry(32, 34, 1.2, 36);
+    const p1Geo = new THREE.CylinderGeometry(30, 32, 0.6, 36);
     const p1 = new THREE.Mesh(p1Geo, platformMat);
-    p1.position.set(-100, -195 + 0.6, 20);
+    p1.position.set(-100, -195 + 0.3, 20);
     p1.receiveShadow = true;
     quarryGroup.add(p1);
 
     // Забой 2 (Отметка -95м, Liebherr 9250, Рядовая руда)
-    const p2Geo = new THREE.CylinderGeometry(28, 30, 1.2, 32);
+    const p2Geo = new THREE.CylinderGeometry(26, 28, 0.6, 32);
     const p2 = new THREE.Mesh(p2Geo, platformMat);
-    p2.position.set(-188, -95 + 0.6, -241);
+    p2.position.set(-188, -95 + 0.3, -241);
     p2.receiveShadow = true;
     quarryGroup.add(p2);
 
     // Забой 3 (Отметка -45м, Liebherr 9250, Вскрыша)
-    const p3Geo = new THREE.CylinderGeometry(30, 32, 1.2, 32);
+    const p3Geo = new THREE.CylinderGeometry(28, 30, 0.6, 32);
     const p3 = new THREE.Mesh(p3Geo, platformMat);
-    p3.position.set(-349, -45 + 0.6, 277);
+    p3.position.set(-349, -45 + 0.3, 277);
     p3.receiveShadow = true;
     quarryGroup.add(p3);
 
     // Забой 4 (Отметка -195м, Liebherr 9400, Богатая руда Сектор Восток на просторном дне)
-    const p4Geo = new THREE.CylinderGeometry(32, 34, 1.2, 36);
+    const p4Geo = new THREE.CylinderGeometry(30, 32, 0.6, 36);
     const p4 = new THREE.Mesh(p4Geo, platformMat);
-    p4.position.set(100, -195 + 0.6, 20);
+    p4.position.set(100, -195 + 0.3, 20);
     p4.receiveShadow = true;
     quarryGroup.add(p4);
 
@@ -367,8 +364,8 @@ export class ModelBuilder {
       metalness: 0.08,
       side: THREE.DoubleSide,
       polygonOffset: true,
-      polygonOffsetFactor: -2.5,
-      polygonOffsetUnits: -5.0
+      polygonOffsetFactor: -1.5,
+      polygonOffsetUnits: -3.0
     });
 
     const shoulderMat = new THREE.MeshStandardMaterial({
@@ -376,8 +373,8 @@ export class ModelBuilder {
       roughness: 0.96,
       side: THREE.DoubleSide,
       polygonOffset: true,
-      polygonOffsetFactor: -2.0,
-      polygonOffsetUnits: -4.0
+      polygonOffsetFactor: -1.0,
+      polygonOffsetUnits: -2.0
     });
 
     const roadWidth = 18; // Широкая двухполосная трасса технологического транспорта
@@ -399,44 +396,48 @@ export class ModelBuilder {
 
       let totalDist = 0;
 
+      let pLeftPrev = null;
+      let pRightPrev = null;
+      let pOutLPrev = null;
+      let pOutRPrev = null;
+      let prevGOutL = 0;
+      let prevGOutR = 0;
+      let prevSide = null;
+
       for (let i = 0; i < pts.length; i++) {
         const t = i / (pts.length - 1);
         const pt = pts[i];
         const tangent = edge.curve.getTangentAt(t).normalize();
-
         const side = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-        const groundY = ModelBuilder.getSurfaceHeight(pt.x, pt.z);
+
         const isPitOrRamp = edge.isRamp || (Math.abs(pt.y || 0) >= 1.0);
-        // Дорожное полотно ВСЕГДА гарантированно выше рельефа карьера:
-        const baseHeight = Math.max(pt.y || 0, groundY);
-        const yElev = baseHeight + (isPitOrRamp ? 1.05 : 0.42);
 
-        const leftP = new THREE.Vector3(pt.x, yElev, pt.z).addScaledVector(side, -roadWidth / 2);
-        const rightP = new THREE.Vector3(pt.x, yElev, pt.z).addScaledVector(side, roadWidth / 2);
+        // Поперечный профиль дороги (плановые координаты)
+        const outL_x = pt.x - side.x * (roadWidth / 2 + shoulderWidth);
+        const outL_z = pt.z - side.z * (roadWidth / 2 + shoulderWidth);
+        const outR_x = pt.x + side.x * (roadWidth / 2 + shoulderWidth);
+        const outR_z = pt.z + side.z * (roadWidth / 2 + shoulderWidth);
 
-        const outerLeftP = new THREE.Vector3(pt.x, yElev - 0.05, pt.z).addScaledVector(side, -(roadWidth / 2 + shoulderWidth));
-        const outerRightP = new THREE.Vector3(pt.x, yElev - 0.05, pt.z).addScaledVector(side, (roadWidth / 2 + shoulderWidth));
+        // Высоты рельефа под полотном и обочинами
+        const gCenter = ModelBuilder.getSurfaceHeight(pt.x, pt.z);
+        const gOutL = ModelBuilder.getSurfaceHeight(outL_x, outL_z);
+        const gOutR = ModelBuilder.getSurfaceHeight(outR_x, outR_z);
+        const maxLocalGround = Math.max(gCenter, gOutL, gOutR);
+
+        // Полотно дороги всегда лежит строго поверх рельефа, предотвращая врезание в скальные уступы карьера
+        const baseHeight = Math.max(pt.y || 0, maxLocalGround);
+        const yElev = baseHeight + (isPitOrRamp ? 0.45 : 0.25);
+
+        const leftP = new THREE.Vector3(pt.x - side.x * (roadWidth / 2), yElev, pt.z - side.z * (roadWidth / 2));
+        const rightP = new THREE.Vector3(pt.x + side.x * (roadWidth / 2), yElev, pt.z + side.z * (roadWidth / 2));
+        const outerLeftP = new THREE.Vector3(outL_x, yElev - 0.05, outL_z);
+        const outerRightP = new THREE.Vector3(outR_x, yElev - 0.05, outR_z);
 
         if (i > 0) {
           const segDist = pt.distanceTo(pts[i - 1]);
           const u0 = totalDist / 38;
           const u1 = (totalDist + segDist) / 38;
           totalDist += segDist;
-
-          const prevPt = pts[i - 1];
-          const prevT = (i - 1) / (pts.length - 1);
-          const prevTang = edge.curve.getTangentAt(prevT).normalize();
-          const prevSide = new THREE.Vector3(-prevTang.z, 0, prevTang.x).normalize();
-          const prevGroundY = ModelBuilder.getSurfaceHeight(prevPt.x, prevPt.z);
-          const prevIsPitOrRamp = edge.isRamp || (Math.abs(prevPt.y || 0) >= 1.0);
-          const prevBaseHeight = Math.max(prevPt.y || 0, prevGroundY);
-          const prevYElev = prevBaseHeight + (prevIsPitOrRamp ? 1.05 : 0.42);
-
-          const pLeftPrev = new THREE.Vector3(prevPt.x, prevYElev, prevPt.z).addScaledVector(prevSide, -roadWidth / 2);
-          const pRightPrev = new THREE.Vector3(prevPt.x, prevYElev, prevPt.z).addScaledVector(prevSide, roadWidth / 2);
-
-          const pOutLPrev = new THREE.Vector3(prevPt.x, prevYElev - 0.05, prevPt.z).addScaledVector(prevSide, -(roadWidth / 2 + shoulderWidth));
-          const pOutRPrev = new THREE.Vector3(prevPt.x, prevYElev - 0.05, prevPt.z).addScaledVector(prevSide, (roadWidth / 2 + shoulderWidth));
 
           // 1. Основное полотно автодороги
           positions.push(
@@ -482,12 +483,29 @@ export class ModelBuilder {
 
           for (let k = 0; k < 12; k++) shNormals.push(0, 0.9, 0.1);
 
-          // 3. Цоколь / откосы насыпи вниз (3D Embankment Skirts): аккуратная посадка полотна в рельеф
-          const skirtDrop = isPitOrRamp ? 1.8 : 0.9;
-          const pOutLPrev_bot = new THREE.Vector3(pOutLPrev.x, pOutLPrev.y - skirtDrop, pOutLPrev.z);
-          const outerLeftP_bot = new THREE.Vector3(outerLeftP.x, outerLeftP.y - skirtDrop, outerLeftP.z);
-          const pOutRPrev_bot = new THREE.Vector3(pOutRPrev.x, pOutRPrev.y - skirtDrop, pOutRPrev.z);
-          const outerRightP_bot = new THREE.Vector3(outerRightP.x, outerRightP.y - skirtDrop, outerRightP.z);
+          // 3. Цоколь / массивные откосы насыпи вниз до рельефа (3D Embankment Skirts):
+          // Опускаем нижние вершины насыпи ВСЕГДА до реального уровня рельефа под обочиной (и еще на 0.8м в скалу),
+          // гарантируя, что насыпь смыкается с уступами и бермами и нигде не висит в воздухе!
+          const pOutLPrev_bot = new THREE.Vector3(
+            pOutLPrev.x,
+            Math.min(pOutLPrev.y - 1.8, prevGOutL - 0.8),
+            pOutLPrev.z
+          );
+          const outerLeftP_bot = new THREE.Vector3(
+            outerLeftP.x,
+            Math.min(outerLeftP.y - 1.8, gOutL - 0.8),
+            outerLeftP.z
+          );
+          const pOutRPrev_bot = new THREE.Vector3(
+            pOutRPrev.x,
+            Math.min(pOutRPrev.y - 1.8, prevGOutR - 0.8),
+            pOutRPrev.z
+          );
+          const outerRightP_bot = new THREE.Vector3(
+            outerRightP.x,
+            Math.min(outerRightP.y - 1.8, gOutR - 0.8),
+            outerRightP.z
+          );
 
           // Левый откос насыпи
           shPositions.push(
@@ -499,7 +517,7 @@ export class ModelBuilder {
             pOutLPrev_bot.x, pOutLPrev_bot.y, pOutLPrev_bot.z,
             outerLeftP_bot.x, outerLeftP_bot.y, outerLeftP_bot.z
           );
-          for (let k = 0; k < 6; k++) shNormals.push(-prevSide.x, 0.2, -prevSide.z);
+          for (let k = 0; k < 6; k++) shNormals.push(-prevSide.x, 0.35, -prevSide.z);
 
           // Правый откос насыпи
           shPositions.push(
@@ -511,8 +529,16 @@ export class ModelBuilder {
             outerRightP_bot.x, outerRightP_bot.y, outerRightP_bot.z,
             pOutRPrev_bot.x, pOutRPrev_bot.y, pOutRPrev_bot.z
           );
-          for (let k = 0; k < 6; k++) shNormals.push(prevSide.x, 0.2, prevSide.z);
+          for (let k = 0; k < 6; k++) shNormals.push(prevSide.x, 0.35, prevSide.z);
         }
+
+        pLeftPrev = leftP;
+        pRightPrev = rightP;
+        pOutLPrev = outerLeftP;
+        pOutRPrev = outerRightP;
+        prevGOutL = gOutL;
+        prevGOutR = gOutR;
+        prevSide = side;
       }
 
       if (positions.length > 0) {
@@ -522,6 +548,7 @@ export class ModelBuilder {
         roadGeo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
         const roadMesh = new THREE.Mesh(roadGeo, roadMat);
         roadMesh.receiveShadow = true;
+        roadMesh.renderOrder = 1;
         roadsGroup.add(roadMesh);
 
         const shGeo = new THREE.BufferGeometry();
@@ -529,29 +556,34 @@ export class ModelBuilder {
         shGeo.setAttribute("normal", new THREE.Float32BufferAttribute(shNormals, 3));
         const shMesh = new THREE.Mesh(shGeo, shoulderMat);
         shMesh.receiveShadow = true;
+        shMesh.renderOrder = 1;
         roadsGroup.add(shMesh);
       }
     });
 
-    // Однотонные накладные кругляшки поверх РЕАЛЬНЫХ развилок, перекрестков и терминалов
-    // (исключены промежуточные линейные точки серпантина, чтобы не было кругов посреди ровной дороги)
+    // Однотонные накладные кругляшки поверх ВСЕХ развилок, перекрестков, серпантинных поворотов и терминалов
     const allCapNodes = [
+      // Поверхность: объекты и развилки
       "n_surface_west", "n_surface_mid", "n_surface_east",
-      "n_ramp_west_top", "n_ramp_east_top",
-      "n_w_b1_hub", "n_w_b2_hub",
-      "n_floor_hub",
       "n_gof", "n_dump", "n_fuel", "n_service", "n_parking",
+      // Западный съезд: въезд, все уступы, развилки и въезд на дно
+      "n_ramp_west_top", "n_w_b1", "n_w_b1_hub", "n_w_b2", "n_w_b2_hub", "n_w_b3", "n_w_b4",
+      // Восточный съезд: въезд, все серпантины уступов и въезд на дно
+      "n_ramp_east_top", "n_e_b1", "n_e_b2", "n_e_b3", "n_e_b4",
+      // Дно карьера
+      "n_floor_hub",
+      // Забои экскаваторов
       "n_exc_waste", "n_exc_mid", "n_exc_deep", "n_exc_deep2"
     ];
 
     const solidCapMat = new THREE.MeshStandardMaterial({
-      color: "#463E36", // Однотонный цвет утрамбованного гравия (без текстурных полос и стыков)
+      color: "#463E36", // Однотонный цвет утрамбованного карьерного гравия (без текстурных полос и стыков)
       roughness: 0.95,
       metalness: 0.05,
       side: THREE.DoubleSide,
       polygonOffset: true,
-      polygonOffsetFactor: -4.0,
-      polygonOffsetUnits: -8.0
+      polygonOffsetFactor: -3.0,
+      polygonOffsetUnits: -6.0
     });
 
     const excavatorCapMat = new THREE.MeshStandardMaterial({
@@ -560,17 +592,19 @@ export class ModelBuilder {
       metalness: 0.06,
       side: THREE.DoubleSide,
       polygonOffset: true,
-      polygonOffsetFactor: -5.0,
-      polygonOffsetUnits: -10.0
+      polygonOffsetFactor: -3.5,
+      polygonOffsetUnits: -7.0
     });
 
     allCapNodes.forEach(nodeId => {
       const node = quarry.nodes[nodeId];
       if (!node) return;
-      const isFloorHub = (nodeId === "n_floor_hub");
       const isExcavator = nodeId.startsWith("n_exc_");
-      // Радиус с запасом перекрывает ширину двухполосной дороги (18м полотно + 7м обочины)
-      const r = isExcavator ? 32 : (isFloorHub ? 19 : 17);
+      const isStation = ["n_gof", "n_dump", "n_fuel", "n_service", "n_parking"].includes(nodeId);
+      const isHub = nodeId.includes("hub") || nodeId.startsWith("n_surface_");
+
+      // Радиус перекрывает ширину полотна и стыки дорог
+      const r = isExcavator ? 33 : (isStation ? 22 : (isHub ? 20 : 17));
 
       const capGeo = new THREE.CircleGeometry(r, 36);
       capGeo.rotateX(-Math.PI / 2);
@@ -578,12 +612,14 @@ export class ModelBuilder {
       const isPitOrRamp = (Math.abs(node.y || 0) >= 1.0);
       const groundY = ModelBuilder.getSurfaceHeight(node.x, node.z);
       const baseY = Math.max(node.y || 0, groundY);
-      // Слегка приподнято над полотном дороги (+0.08м), чтобы гарантированно лежать поверх
-      const yElev = baseY + (isExcavator ? (isPitOrRamp ? 1.25 : 0.55) : (isPitOrRamp ? 1.15 : 0.50));
+
+      // Слегка приподнято над полотном дороги (+0.12м), чтобы лежать поверх и перекрывать стыки
+      const yElev = baseY + (isExcavator ? 0.72 : (isPitOrRamp ? 0.58 : 0.38));
 
       const capMesh = new THREE.Mesh(capGeo, isExcavator ? excavatorCapMat : solidCapMat);
       capMesh.position.set(node.x, yElev, node.z);
       capMesh.receiveShadow = true;
+      capMesh.renderOrder = 3;
       roadsGroup.add(capMesh);
     });
 

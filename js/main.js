@@ -80,14 +80,17 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // 5. Кнопка перезапуска смены
+  const handleShiftRestart = () => {
+    sound.playClick();
+    const sumModal = document.getElementById("shift-summary-modal");
+    if (sumModal) sumModal.classList.remove("active");
+    game.restart();
+  };
+
   const restartBtn = document.getElementById("btn-restart-shift");
-  if (restartBtn) {
-    restartBtn.addEventListener("click", () => {
-      sound.playClick();
-      document.getElementById("shift-summary-modal").classList.remove("active");
-      game.restart();
-    });
-  }
+  if (restartBtn) restartBtn.addEventListener("click", handleShiftRestart);
+  const restartTopBtn = document.getElementById("btn-restart-shift-top");
+  if (restartTopBtn) restartTopBtn.addEventListener("click", handleShiftRestart);
 
   // Регламентное уведомление при старте
   setTimeout(() => {
